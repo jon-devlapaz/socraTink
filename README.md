@@ -1,6 +1,10 @@
-# LearnOps
+# socratink
 
-A neurocognitive learning pipeline built as [Agent Skills](https://agentskills.io/) for Claude. LearnOps converts raw information (transcripts, articles, lectures) into durable knowledge through a four-stage process grounded in cognitive science.
+Most learning tools reward recognition — re-reading, highlighting, watching again. You feel like you're learning, but you're not. socratink breaks the Illusion of Competence by forcing you to reconstruct causal mechanisms from memory before the system says you understand.
+
+**The graph tells the truth.** socratink automatically extracts a structural knowledge map from source material (transcripts, PDFs, lectures) and turns it into a spatial record of verified understanding — not a progress bar.
+
+Built for learners who want proof they know something, not just proof they saw it.
 
 ## The Pipeline
 
@@ -37,7 +41,6 @@ Zip and upload individual skill directories via **Settings → Features → Cust
 ### Claude Code
 
 ```bash
-# Copy to your project's skills directory
 cp -r skills/learnops-extract .claude/skills/
 cp -r skills/learnops-present .claude/skills/
 cp -r skills/learnops-drill .claude/skills/
@@ -52,16 +55,14 @@ The skills use the open Agent Skills format (SKILL.md + references/). Consult yo
 `tools/get_transcript.py` — A CLI utility that fetches YouTube transcripts and saves them as text files. This is the input funnel for Stage 1.
 
 ```bash
-# Requires: youtube-transcript-api, yt-dlp, pyperclip, rich
 pip install youtube-transcript-api yt-dlp pyperclip rich
-
 python tools/get_transcript.py "https://youtube.com/watch?v=..."
 ```
 
 ## Repo Structure
 
 ```
-learnops/
+socratink/
 ├── skills/
 │   ├── learnops-extract/       # Stage 1: Knowledge extraction
 │   │   ├── SKILL.md
@@ -80,7 +81,7 @@ learnops/
 
 ## Status
 
-This is an active build. Stage 4 (consolidation verification) is designed but not yet implemented. The three built stages are functional and tested against live content.
+Active build. Stages 1–3 are functional and tested against live content. Stage 4 (consolidation verification) is designed but not yet implemented. The current focus is stabilizing the epistemic traversal loop — the state machine governing how nodes transition from locked to drilled to solid.
 
 ## License
 
