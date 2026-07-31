@@ -72,8 +72,12 @@ A governed instructional procedure that creates or selects a Learning Task, obse
 _Avoid_: Thinking Skill, lesson content, persona
 
 **Persona Package**:
-A reusable, versioned specification of mental models, heuristics, voice, interaction protocols, disclosures, and constraints. It is mostly immutable and shapes Skill execution without owning learner memory or overriding evidence and safety contracts.
-_Avoid_: Learner Agent, Teaching Skill, learner memory, source of truth
+A reusable, versioned specification of mental models, heuristics, linguistic style, interaction protocols, disclosures, and constraints. It is mostly immutable and shapes Skill execution without owning learner memory, vocal likeness rights, or authority over evidence and safety contracts.
+_Avoid_: Learner Agent, Teaching Skill, Voice Package, learner memory, source of truth
+
+**Voice Package**:
+A separately authorized, versioned speech-rendering package that defines a synthetic or designed voice, its provenance, permitted uses, disclosure requirements, compatibility, expiration, and revocation. It does not contain persona cognition, pedagogy, relationship state, learner speech, or Tool authority.
+_Avoid_: Persona Package, learner voice evidence, implicit likeness permission
 
 **Persona Relationship State**:
 The learner-specific history, preferences, trust boundaries, and established interaction conventions associated with one Persona Package. It belongs to Learner Agent State and never becomes shared package content.
@@ -134,6 +138,7 @@ flowchart TD
     AH --> TS[Thinking Skills]
     AH --> TEACH[Teaching Skills]
     AH --> AP[Active Persona]
+    AH --> VP[Voice Package]
 
     LAS --> LEM[Learner Evidence Model]
     LAS --> PRS[Persona Relationship State]
@@ -162,6 +167,7 @@ flowchart TD
 
     AP --> PP[Persona Package]
     AP --> PCP[Persona Context Projection]
+    AP -.may request.-> VP
     PCP --> PRS
     AP --> M
 
