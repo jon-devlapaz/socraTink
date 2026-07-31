@@ -103,6 +103,29 @@ Research basis: [`../research/learning-map-prerequisite-cycles.md`](../research/
 5. Verify that the repaired revision passes topological validation and routing resumes.
 6. Verify that equivalent cycles in non-gating typed structures do not fail this validator.
 
+## Target equivalence
+
+`equivalentTargetWithinGoal` is a strict, scoped map relation. Two Learning Targets may be treated as equivalent only within a named Goal Interpretation and Learning Map version when they require the same:
+
+- learner action or performance;
+- knowledge and construct scope;
+- performance conditions, including modality, tools, assistance, and context;
+- Evidence Contract and interpretation boundaries.
+
+Equivalence does not assert global identity. The original target IDs, versions, provenance, source support, and evidence links remain distinct and inspectable. Changing the Goal Interpretation, conditions, Evidence Contract, or relevant target version invalidates the equivalence unless a new Map Revision re-establishes it.
+
+The system must reject canonical equivalence based only on:
+
+- similar wording, labels, or nearby concepts;
+- embedding proximity, clustering, or model confidence;
+- shared source passages or curriculum placement;
+- overlapping but non-identical Knowledge Components;
+- similar tasks whose assistance, modality, context, or scoring rules differ.
+
+Embeddings and models may propose a `sameAsCandidate` for review. They cannot activate `equivalentTargetWithinGoal` directly.
+
+Equivalence never merges or copies Evidence Records. Any use of evidence associated with one equivalent target must reference the original record and satisfy the learner-state evidence and transfer contracts.
+
 ## Next Learning Action boundary
 
 A Learning Target identifies what capability should be developed or tested. It does not by itself prescribe the complete interaction.
