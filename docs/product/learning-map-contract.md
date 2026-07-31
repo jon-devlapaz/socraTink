@@ -67,6 +67,42 @@ Every proposed `requiresTarget` edge must remain an inspectable, versioned map h
 
 Non-gating route relationships may influence explanation, candidate generation, and recommendation ranking. They must never be interpreted as unmet prerequisites.
 
+## Prerequisite cycle policy
+
+The active `requiresTarget` projection for one Learning Map revision and Goal Interpretation must be a directed acyclic graph. This is a narrow executable routing invariant, not a claim that knowledge, cognition, or learning is inherently acyclic.
+
+A strict `requiresTarget(A, B)` edge means that B is ineligible until A satisfies the declared prerequisite condition. Reciprocal or longer hard-gate cycles provide no valid route entry point, so a revision containing one cannot be activated.
+
+Every proposed Map Revision must run a topological validation over its active hard-gate projection. When validation finds a cycle, it must:
+
+- reject activation of the revision;
+- return an intelligible trace containing the involved targets and edges;
+- preserve the provenance, rationale, confidence, and scope of every disputed edge;
+- require an explicit revision rather than selecting an arbitrary order.
+
+The revision may resolve the cycle by:
+
+1. downgrading an overstated `requiresTarget` edge to `supportsTarget`;
+2. splitting or refining a target whose bundled performance created the cycle;
+3. narrowing an edge to the context, modality, task, source, or Goal Interpretation where it applies;
+4. recording mutual development without internal hard ordering;
+5. leaving the relationship unresolved and using exploratory tasks rather than inventing a gate.
+
+Knowledge Ontology, argument, association, support, transfer, and co-development structures may contain cycles according to their own typed semantics. Learners may revisit earlier targets, follow spiral teaching sequences, and strengthen earlier performance through later work without violating the routing invariant.
+
+Hard gates should initially be rare, explainable, challengeable, and supported more strongly than soft recommendations. Acyclicity proves that a route is navigable. It does not prove that its prerequisite hypotheses are pedagogically correct.
+
+Research basis: [`../research/learning-map-prerequisite-cycles.md`](../research/learning-map-prerequisite-cycles.md).
+
+### Minimum cycle proof
+
+1. Create a representative map with at least ten Learning Targets and a valid hard-gate route.
+2. Add one reciprocal or multi-target `requiresTarget` cycle.
+3. Verify that activation fails and identifies the complete cycle without changing the previous active revision.
+4. Downgrade, split, or narrow one involved edge through an inspectable Map Revision.
+5. Verify that the repaired revision passes topological validation and routing resumes.
+6. Verify that equivalent cycles in non-gating typed structures do not fail this validator.
+
 ## Next Learning Action boundary
 
 A Learning Target identifies what capability should be developed or tested. It does not by itself prescribe the complete interaction.
