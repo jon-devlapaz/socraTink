@@ -167,6 +167,24 @@ Eligible source evidence may change recommendation weight, reduce unnecessary re
 
 Cross-project transfer references the original Evidence Records and preserves their original project, target, conditions, and provenance. It does not duplicate or detach them from their origin. Changing a transfer hypothesis or its maximum effect requires an inspectable Map Revision and cannot rewrite the source evidence.
 
+## Layered uncertainty
+
+Socratink must not collapse uncertainty from different epistemic layers into one confidence score. At minimum, it represents separately:
+
+1. **Source-claim confidence**: extraction quality, exact source support, authority, scope, qualifiers, conflicts, and known limitations.
+2. **Map or prerequisite confidence**: the basis and strength of a target, decomposition, hard gate, support edge, equivalence, or alternative-route hypothesis.
+3. **Learner-evidence and target-status uncertainty**: task validity, observation quality, assistance, conditions, recency, consistency, counterevidence, and inference-rule limits.
+4. **Transfer uncertainty**: relevant distance between source and destination constructs, contexts, modalities, tasks, assistance, and conditions.
+5. **Routing-value uncertainty**: uncertainty in the expected learning value, information value, cost, accessibility, or goal contribution of a proposed Next Learning Action.
+
+A value from one layer cannot silently substitute for another. High extraction confidence does not establish prerequisite necessity. High prerequisite confidence does not establish learner readiness. Strong learner evidence on one target does not eliminate transfer uncertainty. A high predicted routing value does not alter canonical truth or evidence.
+
+The initial contract prefers inspectable categorical states such as `asserted`, `hypothesized`, `contested`, `low-confidence`, `validated-in-this-domain`, `learner-confirmed`, `deprecated`, and `invalidated`. Every state must identify its scope, provenance, rationale, relevant counterevidence, and last evaluation activity.
+
+Numeric probabilities or scores may supplement these states only when their meaning, reference class, estimation method, calibration evidence, version, and intended decision use are declared. An uncalibrated model score, embedding similarity, or generated confidence cannot be presented as an epistemic probability.
+
+Routing explanations must expose which uncertainty types materially affected selection and which remain unresolved. Uncertainty changes are versioned events. They cannot rewrite the claims, targets, edges, Attempts, or Evidence Records from which they were derived.
+
 ## Next Learning Action boundary
 
 A Learning Target identifies what capability should be developed or tested. It does not by itself prescribe the complete interaction.
