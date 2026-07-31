@@ -150,6 +150,23 @@ The router may rank valid alternatives using goal fit, current evidence gaps, ex
 
 Changing membership, completion rules, constraints, or convergence requirements requires a Map Revision. Existing Attempts and Evidence Records remain attached to their original targets and versions.
 
+## Transfer between targets
+
+`transfersTo` is a conditional map hypothesis about the possible relevance of performance on one Learning Target to another. It is never an instruction to copy evidence or declare destination mastery.
+
+Every transfer proposal must record:
+
+- the source Learning Target, version, Evidence Record IDs, and original performance conditions;
+- the destination Learning Target and version;
+- relevant similarities and differences in construct, knowledge scope, modality, assistance, task type, context, and time;
+- the transfer rationale and its provenance;
+- uncertainty, counterevidence, and the maximum allowed effect on routing or interpretation;
+- any learner correction, dispute, permission, or opt-out relevant to cross-project reuse.
+
+Eligible source evidence may change recommendation weight, reduce unnecessary repetition, or justify a shorter destination verification task. It cannot by itself mark the destination target achieved. A durable destination Learner Target Interpretation requires destination-relevant evidence collected or validly promoted under the learner-state Evidence Record contract.
+
+Cross-project transfer references the original Evidence Records and preserves their original project, target, conditions, and provenance. It does not duplicate or detach them from their origin. Changing a transfer hypothesis or its maximum effect requires an inspectable Map Revision and cannot rewrite the source evidence.
+
 ## Next Learning Action boundary
 
 A Learning Target identifies what capability should be developed or tested. It does not by itself prescribe the complete interaction.
