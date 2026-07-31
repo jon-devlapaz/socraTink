@@ -204,6 +204,35 @@ A route may continue through unaffected targets while a conflict remains unresol
 
 The learner may inspect the disagreement, its sources, the operative scoped treatment, and the route consequences. Corrections, new sources, retractions, and challenges create new versioned events and recomputation. They do not erase the historical conflict.
 
+## Map revision and activation governance
+
+Every map change is represented as an immutable `MapRevision` against a named base map version. A revision must include:
+
+- stable revision ID, base version, proposed successor version, creator, and timestamps;
+- a typed diff of added, changed, deprecated, or restored targets, edges, groups, conditions, and referenced contracts;
+- rationale, source and activity provenance, uncertainty, conflicts, and counterevidence;
+- structural, semantic, cycle, reference-integrity, and applicable evidence-contract validation results;
+- an impact explanation covering route eligibility, learner-visible obligations, prior evidence, and current progress;
+- materiality classification and learner-confirmation status.
+
+The prior active map remains operative until the proposed revision is valid and satisfies its confirmation requirement. A failed, rejected, abandoned, or still-contested revision cannot partially mutate the active map. One Goal Interpretation has exactly one active Learning Map revision at a time.
+
+Learner confirmation is required before activating a material change to:
+
+- the Goal Interpretation or declared goal scope;
+- required Learning Targets, milestones, or route obligations;
+- any `requiresTarget` edge or hard-gate condition;
+- an Evidence Contract, rubric, or interpretation boundary;
+- an Alternative Set membership or completion rule;
+- an operative treatment of materially contested knowledge;
+- any rule that would invalidate, reinterpret, or materially change how prior evidence affects the route.
+
+A revision that only enriches labels, citations, provenance, explanations, non-routing annotations, or disposable projections may activate automatically when validation proves it has no routing, evidence, goal, or learner-obligation effect. It remains visible in the audit history and may be challenged.
+
+Activation is atomic. Rollback creates and activates another revision that restores a prior structure with an explicit diff. It does not delete intervening history. Existing Attempts and Evidence Records remain linked to the exact target, map, Evidence Contract, and inference-rule versions under which they arose.
+
+New Sources, extraction models, personas, or Models may propose Map Revisions but cannot edit the active map directly. Learner corrections and challenges remain append-only events that trigger affected recomputation and a revision when canonical map structure must change.
+
 ## Next Learning Action boundary
 
 A Learning Target identifies what capability should be developed or tested. It does not by itself prescribe the complete interaction.
