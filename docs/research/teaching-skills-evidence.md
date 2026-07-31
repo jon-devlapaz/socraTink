@@ -1,7 +1,7 @@
 # Evidence-backed Teaching Skills for SocraTink's first adult wedge
 
-Date: 2026-07-31  
-Issue: [jon-devlapaz/socraTink#3](https://github.com/jon-devlapaz/socraTink/issues/3)  
+Date: 2026-07-31
+Issue: [jon-devlapaz/socraTink#3](https://github.com/jon-devlapaz/socraTink/issues/3)
 Scope: adults learning difficult technical or academic material, especially postsecondary STEM, professional upskilling, and self-directed study of dense conceptual sources.
 
 ## Executive answer
@@ -367,41 +367,41 @@ The evidence suggests tightening the language and contracts:
 
 ### Tier 1: ship first
 
-1. **Cold Retrieval Drill**  
-   Evidence: high.  
-   Outcome: durable recall, conceptual reconstruction, gap detection.  
+1. **Cold Retrieval Drill**
+   Evidence: high.
+   Outcome: durable recall, conceptual reconstruction, gap detection.
    Core contract: no answer before attempt; feedback must produce a new attempt or scheduled delayed test.
 
-2. **Spaced Verification Scheduler**  
-   Evidence: high for spacing, moderate for exact adaptive scheduling.  
-   Outcome: retention over time.  
+2. **Spaced Verification Scheduler**
+   Evidence: high for spacing, moderate for exact adaptive scheduling.
+   Outcome: retention over time.
    Core contract: repaired/learned items require delayed retrieval before durable status.
 
-3. **Worked Example Fader**  
-   Evidence: high for novice procedural learning.  
-   Outcome: problem-solving schemas.  
+3. **Worked Example Fader**
+   Evidence: high for novice procedural learning.
+   Outcome: problem-solving schemas.
    Core contract: example → explanation → completion → independent problem → delayed re-solve.
 
-4. **Mechanism Explanation Drill**  
-   Evidence: moderate to high when paired with retrieval/feedback.  
-   Outcome: causal understanding and transfer.  
+4. **Mechanism Explanation Drill**
+   Evidence: moderate to high when paired with retrieval/feedback.
+   Outcome: causal understanding and transfer.
    Core contract: learner explains why/how; system checks missing links and non-distinguishing definitions.
 
 ### Tier 2: ship as targeted modules
 
-5. **Contrast Case Discriminator**  
-   Evidence: moderate.  
-   Outcome: choosing the right concept/procedure under confusability.  
+5. **Contrast Case Discriminator**
+   Evidence: moderate.
+   Outcome: choosing the right concept/procedure under confusability.
    Core contract: mixed cases with diagnostic-cue justification.
 
-6. **Map-to-Retrieval Planner**  
-   Evidence: moderate as support.  
-   Outcome: converts a knowledge map into testable prompts and schedules.  
+6. **Map-to-Retrieval Planner**
+   Evidence: moderate as support.
+   Outcome: converts a knowledge map into testable prompts and schedules.
    Core contract: maps create drills; maps do not certify learning.
 
-7. **Active Attempt Loop**  
-   Evidence: high in undergraduate STEM classrooms, moderate to high for solo AI translation.  
-   Outcome: engagement, performance, reduced passive exposure.  
+7. **Active Attempt Loop**
+   Evidence: high in undergraduate STEM classrooms, moderate to high for solo AI translation.
+   Outcome: engagement, performance, reduced passive exposure.
    Core contract: every learning segment includes an accountable learner attempt and informative feedback.
 
 ## Major evidence gaps

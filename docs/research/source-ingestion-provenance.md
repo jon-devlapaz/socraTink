@@ -1,7 +1,7 @@
 # Source ingestion provenance architecture for Socratink
 
-Date: 2026-07-31  
-Issue: [#16, Research provenance-preserving source ingestion and blob architecture](https://github.com/jon-devlapaz/socraTink/issues/16)  
+Date: 2026-07-31
+Issue: [#16, Research provenance-preserving source ingestion and blob architecture](https://github.com/jon-devlapaz/socraTink/issues/16)
 Scope: architecture research, not an implementation decision or database selection.
 
 ## Executive recommendation
@@ -601,59 +601,59 @@ This gives interoperability without forcing an RDF store internally.
 
 ### Adopt
 
-1. **W3C PROV-DM and PROV-O terms** for provenance.  
+1. **W3C PROV-DM and PROV-O terms** for provenance.
    Use as the conceptual and JSON-LD/RDF-compatible vocabulary for lineage.
 
-2. **W3C Web Annotation Data Model and Vocabulary** for claims, corrections, and exact source targets.  
+2. **W3C Web Annotation Data Model and Vocabulary** for claims, corrections, and exact source targets.
    It naturally represents body-target relationships and selectors.
 
-3. **Media Fragments URI** for temporal and rectangular spatial fragments.  
+3. **Media Fragments URI** for temporal and rectangular spatial fragments.
    Use `t=` for audio/video time intervals and `xywh=` for rectangular regions.
 
-4. **IANA media types and RFC 6838 naming discipline**.  
+4. **IANA media types and RFC 6838 naming discipline**.
    Record media types and structured syntax suffixes consistently.
 
-5. **SHA-256 or stronger digest descriptors with size and media type**.  
+5. **SHA-256 or stronger digest descriptors with size and media type**.
    Use OCI descriptor structure as a simple operational pattern.
 
 ### Adapt
 
-1. **BagIt**.  
+1. **BagIt**.
    Use for export, fixture, transfer, and archive validation packages. Do not make every internal ingest a BagIt filesystem tree.
 
-2. **PREMIS**.  
+2. **PREMIS**.
    Use Objects, Events, Agents, Rights, and fixity concepts. Do not implement full PREMIS XML yet.
 
-3. **RO-Crate**.  
+3. **RO-Crate**.
    Use JSON-LD export shape for evidence bundles and research interoperability. Do not force all internal models into schema.org.
 
-4. **WebVTT**.  
+4. **WebVTT**.
    Use for ASR/caption derivatives and time-aligned metadata where available. Do not treat it as canonical if native transcript APIs provide better metadata.
 
-5. **Crossref Crossmark and relation metadata**.  
+5. **Crossref Crossmark and relation metadata**.
    Ingest as external scholarly update signals. Do not assume all sources have complete or correct Crossmark data.
 
-6. **SWHID**.  
+6. **SWHID**.
    Use for code sourced from Software Heritage or when stable code line citation matters. For ordinary uploaded code snippets, a blob digest plus line selector is enough.
 
 ### Reject for the first vertical proof
 
-1. **Full OAIS implementation**.  
+1. **Full OAIS implementation**.
    Use vocabulary only. The reference model is too broad for first proof.
 
-2. **Full PREMIS XML conformance**.  
+2. **Full PREMIS XML conformance**.
    Too much overhead before preservation workflows stabilize.
 
-3. **C2PA signing and trust-list integration**.  
+3. **C2PA signing and trust-list integration**.
    Valuable later for media authenticity, but premature unless signed media provenance is in scope.
 
-4. **IIIF stack**.  
+4. **IIIF stack**.
    Strong for image/text cultural heritage objects, but not needed for the initial transcript/PDF source architecture.
 
-5. **Native RDF graph database as an upfront requirement**.  
+5. **Native RDF graph database as an upfront requirement**.
    PROV-O compatibility matters, but storage should remain replaceable until query patterns are proven.
 
-6. **Vector database as canonical memory**.  
+6. **Vector database as canonical memory**.
    Embeddings are projections only.
 
 ## Operational risks and mitigations

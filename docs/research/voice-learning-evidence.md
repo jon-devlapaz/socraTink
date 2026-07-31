@@ -1,7 +1,7 @@
 # Learner speech as an evidence-bearing learning modality
 
-Issue: [jon-devlapaz/socraTink#4](https://github.com/jon-devlapaz/socraTink/issues/4)  
-Branch: `research/voice-learning-evidence`  
+Issue: [jon-devlapaz/socraTink#4](https://github.com/jon-devlapaz/socraTink/issues/4)
+Branch: `research/voice-learning-evidence`
 Date: 2026-07-31
 
 ## Executive answer
