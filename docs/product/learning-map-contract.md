@@ -47,6 +47,26 @@ The Learning Map references these objects by stable ID and version. It does not 
 
 A `LearningMap` is the versioned route container for one Goal Interpretation. A `MapRevision` is a proposed, inspectable change to that route. Target clusters, modules, and milestones may organize or present Learning Targets, but they are not atomic evidence units and are not routable by default.
 
+## Provenance floor
+
+Every canonical Learning Target, target-to-target edge, Alternative Set, equivalence, transfer hypothesis, waiver, and Map Revision must carry an inspectable provenance bundle containing:
+
+- stable object ID, object type, schema version, and lifecycle status;
+- the person, learner, agent, model, tool, organization, or process that asserted or proposed it;
+- creation activity, timestamp, and relevant model, prompt, extraction, skill, tool, or policy versions;
+- supporting Source Claim IDs and exact selectors when source support exists;
+- explicit declaration when the basis is learner request, expert judgment, curriculum convention, model inference, empirical analysis, or an unsupported exploratory hypothesis;
+- rationale, intended scope, qualifiers, known limitations, uncertainty, conflicts, and counterevidence;
+- review, validation, authorization, and learner-confirmation status;
+- the Map Revision that introduced, changed, activated, contested, deprecated, invalidated, or restored it;
+- derivation links sufficient to reconstruct the transformation path from authorized source or declared origin to the canonical object.
+
+Generated objects are never anonymous. A model-generated or extraction-generated proposal remains labeled as a hypothesis attributed to its generating activity until the applicable review and activation rules are satisfied.
+
+Missing source support does not make a learner-requested or exploratory target impossible, but the absence and alternate basis must be explicit. An object with missing or broken provenance cannot become a required route obligation, activate a `requiresTarget` hard gate, establish target equivalence, or silently change learner evidence interpretation.
+
+Provenance enrichment appends or supersedes metadata through a revision. It does not rewrite the historical assertion or pretend that later support existed when the object was originally proposed.
+
 ## Typed route edges
 
 Learning Map edges must have explicit routing semantics. A generic relationship, source ordering, concept hierarchy, semantic similarity score, or generated association cannot silently become a route constraint.
