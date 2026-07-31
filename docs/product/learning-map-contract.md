@@ -47,6 +47,26 @@ The Learning Map references these objects by stable ID and version. It does not 
 
 A `LearningMap` is the versioned route container for one Goal Interpretation. A `MapRevision` is a proposed, inspectable change to that route. Target clusters, modules, and milestones may organize or present Learning Targets, but they are not atomic evidence units and are not routable by default.
 
+## Typed route edges
+
+Learning Map edges must have explicit routing semantics. A generic relationship, source ordering, concept hierarchy, semantic similarity score, or generated association cannot silently become a route constraint.
+
+The initial target-to-target edge vocabulary includes:
+
+- **`requiresTarget`**: the source target should normally be demonstrated before the destination target under this Goal Interpretation. This is the only edge type that may act as a hard progression gate.
+- **`supportsTarget`**: the source target is expected to help performance on the destination target but is not necessary. It may affect recommendation weight but cannot block progression.
+- **`subtargetOf`**: the source target decomposes or refines a broader destination target. This expresses target structure, not prerequisite order. Completing one child does not imply completion of its parent.
+
+Every proposed `requiresTarget` edge must remain an inspectable, versioned map hypothesis with rationale, provenance, confidence, and scope. It cannot be inferred as canonical merely because:
+
+- two targets, concepts, or source passages are semantically similar;
+- one item appears earlier in a source or curriculum;
+- one Knowledge Component is broader, narrower, or related to another;
+- an embedding, language model, persona, or extraction pipeline proposes the relationship;
+- the learner has completed a neighboring or supporting target.
+
+Non-gating route relationships may influence explanation, candidate generation, and recommendation ranking. They must never be interpreted as unmet prerequisites.
+
 ## Next Learning Action boundary
 
 A Learning Target identifies what capability should be developed or tested. It does not by itself prescribe the complete interaction.
