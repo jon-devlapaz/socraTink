@@ -294,6 +294,48 @@ Expected learning value begins as a product hypothesis. Ranking evaluation must 
 6. Record the selected action and a delayed outcome without allowing the outcome to rewrite its originating evidence.
 7. Change one ranking rule, predict its effect, compare outcomes, and retain it only when the evidence and complexity trade are acceptable.
 
+## Mandatory map queries
+
+The Learner Agent must support six canonical, inspectable query shapes. These are product-level contracts, not database syntax, and must operate over named versions of canonical state.
+
+### 1. Choose the next action
+
+**Ask:** What should I do next, and why?
+
+**Return:** the target and map versions, routing mode, eligibility trace, decisive ranking factors, prerequisite or waiver state, proposed Teaching Skill and interaction mode, expected evidence, unresolved uncertainty, counterfactual alternatives, and learner override options.
+
+### 2. Explain target inclusion
+
+**Ask:** Why is this target in my map?
+
+**Return:** its Goal Interpretation contribution, target statement and conditions, referenced Knowledge Components, exact supporting Source Claims and selectors, prerequisite or progression rationale, known conflicts, required or optional status, and the Map Revision that introduced or changed it.
+
+### 3. Diagnose an Attempt
+
+**Ask:** What did this Attempt reveal, and what should change next?
+
+**Return:** preserved Attempt and Evidence Record references, any valid target-status update, implicated Knowledge Components, task and inference-rule versions, uncertainty, counterevidence, construct-irrelevant explanations such as modality or language load, and bounded recommendations such as retry, prerequisite work, alternate representation, or transfer verification. It cannot mutate a Capability Interpretation unless the evidence contract permits that use.
+
+### 4. Evaluate a new Source
+
+**Ask:** What would this newly authorized Source change?
+
+**Return:** new or changed Source Claims with exact provenance, affected targets and edges, conflicts with the active map, proposed additions, removals, confidence changes, or target-version changes, the materiality and learner-confirmation requirement, and a learner-facing Map Revision explanation. Prior target versions and evidence links remain preserved.
+
+### 5. Evaluate transfer
+
+**Ask:** Can prior evidence inform this target, and how far?
+
+**Return:** the original Evidence Records and conditions, source and destination target versions, construct overlap, context and modality differences, transfer rationale, uncertainty, maximum effect, correction or opt-out state, and the destination verification required before durable interpretation changes.
+
+### 6. Audit map validity
+
+**Ask:** Is this Learning Map structurally or epistemically invalid?
+
+**Return:** hard prerequisite cycles, unsupported or unscoped gates, targets lacking valid Evidence Contracts, overclaimed equivalence, invalid Alternative Sets, suppressed source conflicts, dangling or version-mismatched references, evidence leakage into route nodes, unreviewed embedding or model proposals, unexplained ranking behavior, and the Map Revisions required to repair them.
+
+Every query response must identify the canonical versions read, provenance path, material uncertainty, consequence of the answer, and available inspection, correction, dispute, override, or revision actions. A response may state that evidence is insufficient. It must not fabricate a settled answer to satisfy the interface.
+
 ## Next Learning Action boundary
 
 A Learning Target identifies what capability should be developed or tested. It does not by itself prescribe the complete interaction.
