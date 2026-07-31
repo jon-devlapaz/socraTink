@@ -185,6 +185,25 @@ Numeric probabilities or scores may supplement these states only when their mean
 
 Routing explanations must expose which uncertainty types materially affected selection and which remain unresolved. Uncertainty changes are versioned events. They cannot rewrite the claims, targets, edges, Attempts, or Evidence Records from which they were derived.
 
+## Conflicting knowledge
+
+Conflicting Source Claims remain separate, attributed epistemic objects. Socratink must preserve for each claim its source identity, exact selector, normalized proposition, scope, qualifiers, extraction or curation activity, confidence, and support or attack relations.
+
+A model, persona, curator, source count, embedding cluster, or apparent consensus cannot silently merge conflicting claims, majority-vote them into truth, or select one as canonical. A generated synthesis is a new attributed interpretation with its own provenance and uncertainty, not a replacement for the claims it summarizes.
+
+When a conflict materially affects a Learning Target, Evidence Contract, `requiresTarget` edge, equivalence, alternative-set rule, or another routing decision, the affected object must be marked `contested`. It cannot be represented as settled until an inspectable Map Revision:
+
+- identifies the conflicting claims and exact affected map objects;
+- explains the scoped stance, unresolved uncertainty, or alternative interpretations;
+- records who or what proposed the treatment and on what authority;
+- preserves dissenting claims and counterevidence;
+- states the consequence for routing, assessment, and learner interpretation;
+- satisfies the applicable validation and learner-confirmation rules.
+
+A route may continue through unaffected targets while a conflict remains unresolved. It may also teach the disagreement itself when the Goal Interpretation makes that appropriate. It must not use a contested hard gate or truth condition as though the disagreement did not exist.
+
+The learner may inspect the disagreement, its sources, the operative scoped treatment, and the route consequences. Corrections, new sources, retractions, and challenges create new versioned events and recomputation. They do not erase the historical conflict.
+
 ## Next Learning Action boundary
 
 A Learning Target identifies what capability should be developed or tested. It does not by itself prescribe the complete interaction.
