@@ -1,6 +1,6 @@
 # Goal-Scoped Learning Map Contract
 
-Status: In progress for Wayfinder issue #6.
+Status: Accepted baseline for Wayfinder issue #6.
 
 This contract defines how Socratink represents a learner's route through a Learning Goal without collapsing knowledge, source claims, learner evidence, or semantic similarity into one undifferentiated graph.
 
@@ -356,6 +356,23 @@ The Learner Agent must support six canonical, inspectable query shapes. These ar
 
 Every query response must identify the canonical versions read, provenance path, material uncertainty, consequence of the answer, and available inspection, correction, dispute, override, or revision actions. A response may state that evidence is insufficient. It must not fabricate a settled answer to satisfy the interface.
 
+## Route satisfaction and goal completion
+
+`routeSatisfied` and `goalCompleted` are distinct versioned states.
+
+A route is satisfied for an exact Learning Map revision when:
+
+- every required target or milestone obligation satisfies its declared completion and evidence conditions;
+- every required Alternative Set satisfies its active `one-of`, `k-of-n`, or learner-selected rule;
+- required Evidence Contracts and referenced interpretations are valid for the target versions and conditions;
+- no unresolved material conflict, invalid hard gate, broken provenance, or disputed evidence blocks the completion claim.
+
+Route satisfaction is computed and explainable. Its record identifies the exact map, target, Evidence Contract, inference-rule, and learner-evidence versions used. It is not a timeless mastery claim.
+
+Goal completion requires an explicit learner confirmation referencing a route-satisfaction snapshot. If the learner wants to finish with different obligations, the system must first confirm a material Map Revision that changes the Goal Interpretation or route requirements. Pausing, abandoning, or archiving an unsatisfied goal remains available but is not mislabeled as evidence-backed completion.
+
+Later forgetting, stale evidence, counterevidence, or spaced-reconstruction policy may make a target **Ready to revisit**. A confirmed new Map Revision may create new current obligations. These events change present routing state without erasing the historical fact that a named earlier revision was satisfied and confirmed under its recorded evidence.
+
 ## Next Learning Action boundary
 
 A Learning Target identifies what capability should be developed or tested. It does not by itself prescribe the complete interaction.
@@ -380,13 +397,33 @@ The system must reject or surface any proposal that:
 - allows a model, persona, vector index, or generated summary to become the sole canonical source of map structure;
 - loses the versions and provenance required to explain why a target exists or was selected.
 
-## Decisions still to resolve
+## Contract acceptance matrix
 
-Wayfinder issue #6 will additionally define:
+| Case | Required observation |
+| --- | --- |
+| Target-centric routing | Concepts, Source Claims, and Evidence Records remain referenced layers; only versioned Learning Targets are primary route nodes. |
+| Missing target evidence contract | The target cannot become a normal evidence-evaluable route step and the validity audit identifies the missing contract. |
+| Missing or broken provenance | The object cannot become required, establish equivalence, or act as a hard gate. |
+| Soft support relation | `supportsTarget` may change ranking but never blocks progression. |
+| Target decomposition | `subtargetOf` structures the target but completion of one child never completes its parent automatically. |
+| Hard prerequisite cycle | Revision activation fails with the full cycle trace; the previous active revision remains unchanged. |
+| Cyclic non-gating knowledge | Typed ontology, argument, support, transfer, or co-development cycles do not fail the hard-gate validator. |
+| Embedding equivalence proposal | It remains `sameAsCandidate` until strict scoped equivalence review succeeds. |
+| Alternative route completion | The Alternative Set obligation may complete; unattempted members receive no achievement or copied evidence. |
+| Transfer proposal | Prior evidence may alter routing or shorten verification; destination achievement still requires destination-relevant evidence. |
+| Layered uncertainty | Source, map, learner-evidence, transfer, and routing-value uncertainty remain separately inspectable. |
+| Uncalibrated score | It cannot be presented as an epistemic probability or silently control canonical truth, evidence, or eligibility. |
+| Material source conflict | Affected map objects become `contested`; no silent synthesis or settled hard gate is allowed. |
+| Material Map Revision | The previous revision remains active until validation and learner confirmation complete atomically. |
+| Non-material enrichment | Provenance or explanation metadata may activate automatically only after proving no routing, evidence, goal, or obligation effect. |
+| Model, persona, or extraction change | It may propose a revision but cannot directly mutate the active map. |
+| Deterministic eligibility | Identical versioned state and routing mode produce identical candidates, exclusions, and traces. |
+| Exploration of blocked target | Access is allowed and labeled, but prerequisites, route completion, and learner claims are not silently changed. |
+| Transparent baseline ranking | Feature contributions, policy version, selected target, and counterfactual alternatives are inspectable. |
+| Learned ranker proposal | It cannot replace the baseline without valid outcome data, evaluator, versioning, rollback, and measured benefit. |
+| Mandatory query coverage | All six canonical queries return versions, provenance, uncertainty, consequences, and correction paths or explicitly report insufficient evidence. |
+| Route satisfaction | All active obligations and evidence conditions pass with no blocking invalidity; the result references exact versions. |
+| Goal completion | Completion is recorded only after route satisfaction and explicit learner confirmation. |
+| Ready to revisit | Later staleness or counterevidence changes current routing without erasing the historical completion snapshot. |
 
-- typed target-to-target and target-to-reference edge semantics;
-- prerequisite, cycle, equivalence, decomposition, alternative-path, and transfer policies;
-- provenance, confidence, conflict, and uncertainty requirements;
-- map revision, correction, and learner-confirmation paths;
-- canonical routing queries and their failure behavior;
-- an executable acceptance matrix for the contract.
+The executable implementation may use any storage architecture that preserves these observable behaviors. Graph databases, relational tables, document stores, vector indexes, or hybrids are implementation choices, not substitutes for the contract.
