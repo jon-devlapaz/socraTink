@@ -126,6 +126,30 @@ Embeddings and models may propose a `sameAsCandidate` for review. They cannot ac
 
 Equivalence never merges or copies Evidence Records. Any use of evidence associated with one equivalent target must reference the original record and satisfy the learner-state evidence and transfer contracts.
 
+## Alternative routes
+
+Non-equivalent Learning Targets may provide legitimate alternative routes toward the same goal or milestone. They must be grouped in an explicit, versioned Alternative Set rather than mislabeled as equivalent.
+
+Every Alternative Set must declare:
+
+- its stable ID, map version, Goal Interpretation, rationale, and provenance;
+- its member target IDs and versions;
+- a completion rule such as `one-of`, `k-of-n`, or learner-selected branch;
+- any conditions that restrict which alternatives are valid;
+- whether later convergence targets or additional evidence are required;
+- how a learner may inspect, override, or revisit the selected branch.
+
+Satisfying an Alternative Set means only that its declared route obligation is complete. It does not:
+
+- mark unattempted alternatives as achieved;
+- create or copy Evidence Records for those alternatives;
+- establish that the targets are equivalent;
+- support a broader Capability Interpretation beyond the evidence actually collected.
+
+The router may rank valid alternatives using goal fit, current evidence gaps, expected learning or information value, accessibility needs, learner preference, available tools, time, source requirements, and other declared constraints. The chosen branch and decisive factors must be explainable. The choice remains reversible unless an external requirement makes it irreversible and that requirement is disclosed before selection.
+
+Changing membership, completion rules, constraints, or convergence requirements requires a Map Revision. Existing Attempts and Evidence Records remain attached to their original targets and versions.
+
 ## Next Learning Action boundary
 
 A Learning Target identifies what capability should be developed or tested. It does not by itself prescribe the complete interaction.
