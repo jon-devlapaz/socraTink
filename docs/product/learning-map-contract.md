@@ -233,6 +233,67 @@ Activation is atomic. Rollback creates and activates another revision that resto
 
 New Sources, extraction models, personas, or Models may propose Map Revisions but cannot edit the active map directly. Learner corrections and challenges remain append-only events that trigger affected recomputation and a revision when canonical map structure must change.
 
+## Next-target routing architecture
+
+Next-target selection separates a trusted eligibility kernel from a replaceable ranking policy.
+
+### Stage 1: deterministic eligibility
+
+Given the same versioned canonical state and routing mode, the eligibility kernel must return the same candidates, exclusions, and rejection traces. It is trusted harness code, not an LLM judgment.
+
+For normal route progression, a target is eligible only when:
+
+- it is active in the current Learning Map revision and belongs to an unsatisfied route obligation;
+- every applicable hard prerequisite is satisfied or covered by an explicit, versioned waiver;
+- its Alternative Set branch, conflict status, and other route constraints permit selection;
+- the target and referenced Evidence Contract pass integrity checks;
+- an appropriate Teaching Skill and task, prompt, tool, or dialogue mode are available;
+- learner permissions, accessibility needs, time, tool availability, and declared constraints permit the action.
+
+Eligibility supports explicit routing modes:
+
+- **progression**: advance an unsatisfied route obligation;
+- **revisit**: reconstruct or verify a target because evidence is stale, due, disputed, assisted, or intentionally being strengthened;
+- **diagnostic or exploratory**: gather information or pursue curiosity without pretending that unmet hard prerequisites or route obligations have been satisfied;
+- **learner-requested**: honor a learner's direct target request while clearly exposing any prerequisite, evidence, or route consequences.
+
+Hard gates constrain canonical progression, not access to knowledge. An exploratory or learner-requested interaction may visit a blocked target, but it cannot silently waive prerequisites, mark a route obligation complete, or broaden learner claims beyond valid Evidence Records.
+
+### Stage 2: transparent baseline ranking
+
+The initial ranker must be a small, versioned, inspectable scoring function. Candidate features may include:
+
+- contribution to the active Goal Interpretation;
+- current evidence gap, staleness, spacing, and diagnostic value;
+- expected learning value and expected information value;
+- prerequisite and transfer uncertainty;
+- estimated time, effort, interruption cost, and available session length;
+- accessibility, modality, learner preference, and source constraints;
+- availability of an appropriate Teaching Skill and evidence-bearing interaction.
+
+Every ranking run records the eligible candidate set, feature values, weight or rule contribution, final ordering, selected target, routing-policy version, and unresolved uncertainty. The learner receives:
+
+- the selected target and version;
+- why it is eligible and why it ranked first;
+- blocked prerequisites or waivers;
+- the proposed Teaching Skill, interaction mode, and expected evidence;
+- a counterfactual comparison with at least the next three candidates when available;
+- override, revisit, exploration, and correction options.
+
+Models may propose candidates, features, explanations, or policy changes. They cannot bypass the eligibility kernel or secretly supply the operative score. Learned ranking may replace or supplement the baseline only after Socratink has valid outcome data, a fixed evaluator, an inspectable policy version, counterfactual or experimental evidence, rollback, and proof that the gain pays for added opacity and complexity.
+
+Expected learning value begins as a product hypothesis. Ranking evaluation must include delayed learner reconstruction or transfer outcomes where appropriate rather than optimizing engagement, completion speed, model agreement, or immediate fluency as proxies for learning.
+
+### Minimum routing proof
+
+1. Build a fixture with at least ten versioned targets and three materially different learner-state fixtures.
+2. Prove deterministic candidate and rejection traces for each routing mode.
+3. Prove hard gates block progression but do not prohibit labeled exploration or learner-requested access.
+4. Expose every score contribution and the counterfactual comparison for the selected target.
+5. Exercise learner override, explicit waiver, stale evidence, alternative routes, contested knowledge, and unavailable-task cases.
+6. Record the selected action and a delayed outcome without allowing the outcome to rewrite its originating evidence.
+7. Change one ranking rule, predict its effect, compare outcomes, and retain it only when the evidence and complexity trade are acceptable.
+
 ## Next Learning Action boundary
 
 A Learning Target identifies what capability should be developed or tested. It does not by itself prescribe the complete interaction.
