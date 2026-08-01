@@ -4,7 +4,7 @@ Status: In development for Wayfinder issue #8. The foundational epistemic-labor 
 
 This contract defines the governed instructional procedures that one learner-owned Learner Agent may use to select, conduct, evaluate, and adapt learning activity without confusing agent assistance with learner capability.
 
-Its pedagogical and architectural basis is documented in [`../research/teaching-skills-evidence.md`](../research/teaching-skills-evidence.md), [`../research/teaching-skill-epistemic-labor.md`](../research/teaching-skill-epistemic-labor.md), and [`../research/teaching-skill-evaluator-system-design.md`](../research/teaching-skill-evaluator-system-design.md). Learning Targets and route selection remain governed by [`learning-map-contract.md`](learning-map-contract.md). Learner claims and Evidence Records remain governed by [`learner-state-contract.md`](learner-state-contract.md). Persona influence remains governed by [`persona-package-contract.md`](persona-package-contract.md).
+Its pedagogical and architectural basis is documented in [`../research/teaching-skills-evidence.md`](../research/teaching-skills-evidence.md), [`../research/teaching-skill-epistemic-labor.md`](../research/teaching-skill-epistemic-labor.md), [`../research/teaching-skill-evaluator-system-design.md`](../research/teaching-skill-evaluator-system-design.md), and [`../research/teaching-skill-voice-system-design.md`](../research/teaching-skill-voice-system-design.md). Learning Targets and route selection remain governed by [`learning-map-contract.md`](learning-map-contract.md). Learner claims and Evidence Records remain governed by [`learner-state-contract.md`](learner-state-contract.md). Persona influence and Voice Package authority remain governed by [`persona-package-contract.md`](persona-package-contract.md).
 
 ## Teaching Skill identity
 
@@ -185,6 +185,42 @@ Evaluation independence scales with the intended use and maximum claim scope, no
 
 The Harness must preserve which dimensions of independence are present: invocation context, prompt, Model, provider, process, credentials, deployment, operator, rubric author, hidden-material access, and human reviewer. Independence is multidimensional rather than a binary label.
 
+## Modality declaration and first-class voice
+
+Voice is a first-class capture and rendering modality around the semantic teaching system. It is not a separate agent, a privileged window into understanding, or a mandatory interface for targets that another modality can represent validly.
+
+Every proposed Learning Task and every opportunistic evidence capture must include a versioned `ModalityDeclaration`. For each modality relative to each intended claim, the declaration assigns exactly one role:
+
+| Role | Meaning | Evidence consequence |
+| --- | --- | --- |
+| `construct_relevant` | Features of the modality are part of the Learning Target, such as pronunciation, listening, oral interaction, public speaking, notation, or formal writing. | The Evidence Contract names the relevant features, conditions, accommodations, and validated scoring rule. Substituting another modality changes the task or claim. |
+| `evidence_channel` | The modality carries learner work about another construct, such as a spoken conceptual explanation. | Evaluate the target-relevant semantic work, not generic performance in the channel. Equivalent channels should remain available where the construct permits them. |
+| `accommodation` | The modality or transformation enables access to the same intended construct. | The accommodation and its effects remain explicit. It cannot reduce the learner claim merely because assistance was needed to access the task. |
+| `presentation_only` | The modality renders agent or system content without constituting learner work. | It cannot become learner evidence, alter evaluation, or imply exposure, comprehension, or mastery. |
+
+A modality may hold different roles for different claims, but its role cannot remain ambiguous within one Evidence Contract. When speech, writing, AAC, diagrams, notation, gesture, or another channel changes the construct rather than merely carrying it, the target and evaluation must say so explicitly.
+
+### Voice interaction requirements
+
+A voice-capable Teaching Skill must:
+
+- obtain purpose-bound consent before capture, show an obvious recording state, and provide immediate pause, mute, stop, correction, and revocation controls;
+- provide synchronized text for agent speech and provisional text for learner speech, plus keyboard-operable text, writing, AAC, and quiet-mode paths wherever the construct permits them;
+- preserve raw audio, normalized audio, ASR partials, ASR final output, learner corrections, extracted claims, evaluation proposals, and generated speech as distinct lineage-linked artifacts rather than silently overwriting one with another;
+- treat ASR partials as provisional display artifacts, never as sealed learner evidence;
+- expose transcription failure, media gaps, degraded conditions, provider identity, Model and configuration versions, and relevant capture conditions instead of guessing or hiding them;
+- keep learner speech evidence, Teaching Skill orchestration, Evaluator authority, Persona behavior, and Voice Package rendering rights logically separate;
+- support interruption and cancellation so that unplayed agent speech, late provider output, or a cancelled turn cannot be mistaken for learner exposure or attached to a later turn;
+- minimize audio, transcript, timing, and generated-speech retention under explicit learner permissions and the learner-state deletion contract.
+
+For any `T1`, `T2`, or `T3` evidence-bearing voice evaluation, the learner must be able to inspect, correct, and approve the operative transcript revision before the Harness seals the `EvaluationRequest`. A later correction changes the turn seal, invalidates any proposal bound to the previous revision, and requires fresh evaluation before canonical use. `T0` formative feedback may use clearly labeled provisional transcription, but it cannot mutate a learner claim.
+
+The Evaluator receives source audio or audio-derived features only when the Evidence Contract makes them construct-relevant, the learner has consented to that use, and the sealed request names the permitted features. Otherwise it receives the approved transcript and declared conditions, not unrestricted audio, prosody, or hidden provider features.
+
+Accent, dialect, eloquence, assertiveness, speaking rate, pauses, fillers, disfluency, stuttering, volume, microphone quality, apparent confidence, apparent emotion, and ASR confidence are not learner-capability evidence unless the Learning Target explicitly includes the feature and the measure has been validated for the intended population and use. By default, hesitation or transcription uncertainty may trigger clarification or a fresh task, not a learner label or score.
+
+Persona expression may shape wording, rhythm, tone, and delivery after instructional and evaluation decisions. A separately authorized Voice Package may render that expression. Neither a Persona Package nor a Voice Package may alter the learner artifact, modality role, rubric, criterion result, claim scope, or evidence boundary.
+
 ## MVP and evolutionary topology
 
 The MVP is a modular monolith with real logical boundaries:
@@ -222,7 +258,11 @@ The system must reject or surface any Teaching Skill that:
 - treats accessibility accommodation as lower capability when the accommodation is not part of the target construct;
 - permits a Persona, Model, Tool, or learner preference to bypass constitutional evidence boundaries;
 - cannot identify what cognitive work the learner and agent each performed;
-- cannot provide a fresh verification path when it claims movement toward independence.
+- cannot provide a fresh verification path when it claims movement toward independence;
+- captures voice without purpose-bound consent or an obvious recording state, or continues capture after pause, stop, or revocation;
+- uses an ASR partial, hidden transcript, or unapproved operative transcript for evidence-bearing evaluation;
+- silently overwrites original audio, ASR output, learner correction, or prior evaluation when a later artifact is created;
+- treats presentation-only persona speech, content exposure, accent, fluency, prosody, or transcription confidence as learner capability without an explicit validated construct.
 
 ## Minimum foundational claim
 
