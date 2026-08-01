@@ -221,6 +221,50 @@ Accent, dialect, eloquence, assertiveness, speaking rate, pauses, fillers, disfl
 
 Persona expression may shape wording, rhythm, tone, and delivery after instructional and evaluation decisions. A separately authorized Voice Package may render that expression. Neither a Persona Package nor a Voice Package may alter the learner artifact, modality role, rubric, criterion result, claim scope, or evidence boundary.
 
+## Version identity and lifecycle
+
+Every Teaching Skill release is an immutable, content-hashed `TeachingSkillVersion`. Its identity combines a stable `skill_id`, human-readable semantic version, schema version, and authoritative content hash. The content hash covers the canonical manifest and every declarative or executable artifact that can affect selection, learner work, assistance, evaluation, output, or failure behavior.
+
+The version manifest must declare at minimum:
+
+- publisher, provenance, creation time, status, superseded version, and human-readable and machine-readable change summaries;
+- supported Learning Target and Evidence Contract families and versions;
+- required `TeachingContext`, `TeachingSkillResult`, `ModalityDeclaration`, assistance-policy, and evaluator interface versions;
+- exact built-in dependency versions or permitted dependency ranges that resolve to an exact dependency closure before execution;
+- required and optional Tool capabilities, permission classes, runtime features, and minimum compatible Agent Harness version;
+- supported learner conditions, modalities, accessibility paths, environments, consequence tiers, and known exclusions;
+- validation evidence, calibration status where applicable, unresolved risks, and retirement or revocation conditions.
+
+Semantic version labels communicate intended compatibility, but the content hash is authoritative. A release is classified as:
+
+- **patch** when behavior, evidence meaning, permissions, learner work, and compatibility remain unchanged and the release corrects implementation or documentation without widening scope;
+- **minor** when it adds backward-compatible target coverage, presentation, task forms, or capabilities without changing the meaning of existing declared behavior;
+- **major** when it changes learner-reserved work, assistance or reveal policy, target or evidence meaning, rubric or evaluator requirements, modality role, claim scope, permissions, required Tools, durable outputs, failure behavior, or compatibility assumptions.
+
+If classification is uncertain, the release is major. A semantic label never permits a consumer to ignore the exact hash, change summary, or validation status.
+
+### Resolution and evidence pinning
+
+Before a Teaching Skill executes, the Agent Harness resolves and records the exact skill version and exact dependency closure. `TeachingContext`, `TeachingSkillResult`, Attempts, Assistance Events, reveal events, evaluation requests, evaluation proposals, Evidence Records, traces, and replay records must reference those exact identities. Floating labels such as `latest`, mutable branches, provider aliases, or unrecorded dependency ranges cannot appear as the operative identity of an evidence-eligible run.
+
+Historical learner work retains the versions under which it was elicited and interpreted. Installing, selecting, upgrading, rolling back, retiring, or revoking a Teaching Skill cannot silently reinterpret prior Attempts or overwrite prior Evidence Records. Applying a new skill, policy, rubric, or Evaluator to historical work creates a new proposal with new provenance and an explicit relationship to the prior interpretation.
+
+### Upgrade and rollback
+
+An active Learning Task or evidence-eligible Attempt remains pinned to its resolved version closure until it completes, pauses for an explicit migration, or is invalidated. No dependency may change in place during the run.
+
+A future run may adopt a compatible version only through a declared upgrade policy that checks the manifest, change classification, validation status, target and Evidence Contract compatibility, required capabilities, learner permissions, and active plan state. Material changes must be inspectable before use. Changes that alter learner expectations, modality, retained data, permissions, safety, or evidence meaning require explicit learner notice or consent as the governing contract requires.
+
+An in-progress Teaching Plan may migrate only through a versioned migration procedure that states preserved state, discarded state, changed behavior, evidence consequences, and rollback path. If equivalence cannot be demonstrated, the Harness closes or invalidates the affected task and starts a fresh task under the new version rather than pretending continuity.
+
+Rollback selects an earlier immutable version for future eligible runs. It does not erase artifacts produced by the newer version or rewrite their provenance. The Harness must reject rollback when the earlier version is incompatible, revoked for safety or security, unavailable with its exact dependencies, or invalid for the intended Evidence Contract.
+
+### Retirement, revocation, and archival replay
+
+Retirement removes a version from normal new-run selection while preserving its manifest, hash, change history, validation record, and references needed to understand prior activity. Revocation additionally blocks new execution because of a security, safety, rights, validity, or integrity failure and applies an explicit policy to active runs.
+
+Retired or revoked code need not remain executable forever. Audit and deterministic replay must remain possible from preserved manifests, events, inputs, recorded nondeterministic outputs, policy decisions, migrations, and non-reconstructive deletion tombstones. If an exact runtime can no longer be safely executed, the system must disclose that limitation rather than substituting a newer implementation and calling it equivalent.
+
 ## MVP and evolutionary topology
 
 The MVP is a modular monolith with real logical boundaries:
@@ -262,7 +306,12 @@ The system must reject or surface any Teaching Skill that:
 - captures voice without purpose-bound consent or an obvious recording state, or continues capture after pause, stop, or revocation;
 - uses an ASR partial, hidden transcript, or unapproved operative transcript for evidence-bearing evaluation;
 - silently overwrites original audio, ASR output, learner correction, or prior evaluation when a later artifact is created;
-- treats presentation-only persona speech, content exposure, accent, fluency, prosody, or transcription confidence as learner capability without an explicit validated construct.
+- treats presentation-only persona speech, content exposure, accent, fluency, prosody, or transcription confidence as learner capability without an explicit validated construct;
+- executes an evidence-eligible run under a floating or mutable Teaching Skill identity or without recording the exact dependency closure;
+- changes a Teaching Skill, policy, evaluator dependency, Tool dependency, or modality rule in place under an existing version or content hash;
+- silently upgrades an active task, Attempt, or Teaching Plan without preserving version identity and evidence consequences;
+- rewrites historical learner work or evidence when a version is upgraded, rolled back, retired, or revoked;
+- claims compatibility, migration equivalence, or safe rollback without declared checks and validation evidence.
 
 ## Minimum foundational claim
 
