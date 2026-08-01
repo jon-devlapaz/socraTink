@@ -82,11 +82,57 @@ Before execution, the Agent Harness must validate that the context is sufficient
 
 Persona preferences and learner preferences are advisory inputs within this envelope. They may influence presentation, examples, modality, assistance, and selection among valid procedures. They cannot alter the target, invent evidence, widen an evidence claim, or bypass constitutional and policy boundaries.
 
+## Typed result and durable-write boundary
+
+A Teaching Skill must return a versioned `TeachingSkillResult`. It must not directly mutate durable learner state, the active Learning Map, the Knowledge Ontology, Source records, permissions, Persona Relationship State, or any other canonical object.
+
+A result must declare one terminal or continuation status, such as:
+
+- `plan_ready`;
+- `action_ready`;
+- `awaiting_learner_work`;
+- `clarification_required`;
+- `reroute_proposed`;
+- `paused`;
+- `stopped`;
+- `completed`;
+- `failed`.
+
+As applicable, the typed result may contain:
+
+- a `TeachingPlan` that identifies the target, instructional rationale, sequence, assistance policy, evidence intention, adaptation points, and exit conditions;
+- one or more proposed Learning Tasks, each with expected learner work, modality, allowed Tools, conditions, rubric, evaluator reference, and evidence eligibility;
+- proposed Instructional Actions such as explaining, questioning, demonstrating, prompting, hinting, comparing, modeling, or giving feedback;
+- preserved learner artifacts and observation references without silently rewriting the learner's work;
+- proposed Assistance Events, `SolutionRevealEvent` records, feedback events, and Agent Actions;
+- a proposed evaluation with rubric results, interpretation, uncertainty, counterevidence, and maximum claim scope;
+- a proposed Evidence Record that references the exact target, task, learner artifact, conditions, assistance history, evaluator, and interpretation rule;
+- proposed Next Learning Actions, clarification questions, context corrections, reroutes, pauses, or stops;
+- result identity, status, versions, provenance, execution trace, validation findings, warnings, and errors.
+
+A `TeachingPlan` describes an intended instructional sequence. A Learning Task defines an evidence-eliciting activity and expected learner work. An Instructional Action is one agent act within a plan or task. An observation preserves what occurred. An evaluation proposes how observed learner work should be interpreted. These objects must remain distinguishable even when one interaction produces several of them.
+
+The Agent Harness owns the durable-write gate. It must validate each proposed object against the active `TeachingContext`, schema, permissions, constitutional rules, target and map versions, assistance policy, and evidence contract before committing it. Validation may accept, reject, narrow, quarantine, or return a proposal for correction. Rejection must preserve a reason and must not silently convert the proposal into canonical state.
+
+A proposed Evidence Record is not durable learner evidence until the Agent Harness confirms at minimum:
+
+- the target and Evidence Contract versions;
+- the preserved learner work product and observation provenance;
+- modality, environment, allowed Tools, and relevant accommodations;
+- assistance source, timing, amount, adaptivity, and every decisive reveal;
+- the evaluator and interpretation-rule versions;
+- uncertainty, counterevidence, intended use, and maximum claim scope;
+- that the proposal does not credit Agent Actions as learner work.
+
+The durable-write gate may store raw learner work and append-only execution events before final evaluation when required for continuity or recovery. Such storage remains observation data, not a learner claim. Only a validated Evidence Record may update a Learner Target Interpretation or Capability Interpretation under the learner-state contract.
+
 ## Non-negotiable failure boundaries
 
 The system must reject or surface any Teaching Skill that:
 
 - executes without a validated, versioned `TeachingContext` or silently replaces missing canonical inputs with model inference;
+- returns untyped output, directly mutates canonical state, or bypasses the Agent Harness durable-write gate;
+- treats its own evaluation or Evidence Record proposal as accepted evidence without independent harness validation;
 - lacks a versioned `AssistanceAndSolutionRevelationPolicy`;
 - hides agent work or decisive assistance inside conversational style;
 - treats exposure, agreement, copying, completion, or assisted success as independent capability;
