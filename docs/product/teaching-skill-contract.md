@@ -58,10 +58,35 @@ The versioned policy must declare at minimum:
 
 Numeric thresholds are not universal doctrine. A Teaching Skill must justify and version task-specific thresholds, and the Learner Agent must preserve the evidence required to evaluate and revise them.
 
+## Required Teaching Context input
+
+A Teaching Skill must not execute from a raw prompt, transcript fragment, Persona preference, or model-inferred context alone. The Agent Harness must provide a validated, versioned `TeachingContext` envelope.
+
+The envelope must identify at minimum:
+
+- the active Learning Target, its Evidence Contract, the interpreted Learning Goal, and the active Map Revision;
+- the intended evidence claim and whether the interaction is in learning, execution, or hybrid mode;
+- relevant Learner Target Interpretations, Capability Interpretations, Attempts, Evidence Records, uncertainty, counterevidence, prerequisite state, and prior assistance history;
+- modality, accessibility requirements, permitted accommodations, allowed Tools, environment, time constraints, and stakes;
+- relevant Source Claims, Knowledge Components, ontology references, and provenance when they inform the target or task;
+- the selected Teaching Skill and assistance-policy versions;
+- active Persona Package, Model, Tool, rubric, evaluator, and task-generator versions when they may affect execution or interpretation;
+- learner help preferences, consent or permission conditions, and pause, override, and stop controls;
+- context-envelope identity, creation time, provenance, and validation status.
+
+The envelope is a bounded snapshot for one instructional decision or declared sequence. Durable learner state remains canonical outside the skill. A Teaching Skill may consume the envelope and propose actions or records, but it cannot silently mutate the envelope, learner state, Learning Map, or Evidence Contract.
+
+Unknown, unavailable, disputed, stale, and not-applicable values must remain distinct and explicit. The Model must not fill missing canonical inputs by conversational inference and then treat those guesses as state.
+
+Before execution, the Agent Harness must validate that the context is sufficient for the proposed instructional act. If the Learning Target, Evidence Contract, interaction mode, required permissions, or construct-relevant accessibility conditions cannot be established, the skill must clarify, diagnose, propose a bounded context revision, choose a non-evidentiary exploratory action, or reroute. It must not silently guess and proceed as though the missing condition were known.
+
+Persona preferences and learner preferences are advisory inputs within this envelope. They may influence presentation, examples, modality, assistance, and selection among valid procedures. They cannot alter the target, invent evidence, widen an evidence claim, or bypass constitutional and policy boundaries.
+
 ## Non-negotiable failure boundaries
 
 The system must reject or surface any Teaching Skill that:
 
+- executes without a validated, versioned `TeachingContext` or silently replaces missing canonical inputs with model inference;
 - lacks a versioned `AssistanceAndSolutionRevelationPolicy`;
 - hides agent work or decisive assistance inside conversational style;
 - treats exposure, agreement, copying, completion, or assisted success as independent capability;
