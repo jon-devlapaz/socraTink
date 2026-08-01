@@ -4,7 +4,7 @@ Status: In development for Wayfinder issue #8. The foundational epistemic-labor 
 
 This contract defines the governed instructional procedures that one learner-owned Learner Agent may use to select, conduct, evaluate, and adapt learning activity without confusing agent assistance with learner capability.
 
-Its pedagogical basis is documented in [`../research/teaching-skills-evidence.md`](../research/teaching-skills-evidence.md) and [`../research/teaching-skill-epistemic-labor.md`](../research/teaching-skill-epistemic-labor.md). Learning Targets and route selection remain governed by [`learning-map-contract.md`](learning-map-contract.md). Learner claims and Evidence Records remain governed by [`learner-state-contract.md`](learner-state-contract.md). Persona influence remains governed by [`persona-package-contract.md`](persona-package-contract.md).
+Its pedagogical and architectural basis is documented in [`../research/teaching-skills-evidence.md`](../research/teaching-skills-evidence.md), [`../research/teaching-skill-epistemic-labor.md`](../research/teaching-skill-epistemic-labor.md), and [`../research/teaching-skill-evaluator-system-design.md`](../research/teaching-skill-evaluator-system-design.md). Learning Targets and route selection remain governed by [`learning-map-contract.md`](learning-map-contract.md). Learner claims and Evidence Records remain governed by [`learner-state-contract.md`](learner-state-contract.md). Persona influence remains governed by [`persona-package-contract.md`](persona-package-contract.md).
 
 ## Teaching Skill identity
 
@@ -126,6 +126,82 @@ A proposed Evidence Record is not durable learner evidence until the Agent Harne
 
 The durable-write gate may store raw learner work and append-only execution events before final evaluation when required for continuity or recovery. Such storage remains observation data, not a learner claim. Only a validated Evidence Record may update a Learner Target Interpretation or Capability Interpretation under the learner-state contract.
 
+## Teaching Skill, Evaluator, and Harness authority
+
+Teaching Skill, Evaluator, and Agent Harness are three logically distinct authorities. This separation is defined by typed interfaces, bounded context, capabilities, versioning, and write authority. It does not require three processes or services.
+
+The **Teaching Skill** owns instructional control within its declared scope. It may:
+
+- propose plans, tasks, explanations, questions, hints, examples, feedback, and adaptations;
+- preserve observations and request evidence evaluation;
+- produce a non-authoritative `InstructionalAssessment` for immediate teaching adaptation.
+
+It may not certify its own instructional success, select a more favorable Evaluator after seeing learner work, alter an evidence-eligible rubric after task issuance, access hidden verification material without a declared capability, or commit learner evidence.
+
+The **Evaluator** owns bounded interpretation. It receives a sealed, versioned `EvaluationRequest` containing only the observations and conditions required by the Evidence Contract. It applies a declared rubric and interpretation rule and returns an `EvaluationProposal` or explicit abstention. It may not teach, widen the allowed claim scope, hide disagreement, access canonical state broadly, or perform durable writes.
+
+The **Agent Harness** is the control plane and sole command authority. It:
+
+- constructs the `TeachingContext` and sealed `EvaluationRequest`;
+- freezes the task, Evidence Contract, rubric, Evaluator, assistance policy, and permitted claim scope before an evidence-eligible Attempt;
+- grants least-privilege capabilities and denies ambient access to canonical stores, credentials, hidden materials, and unrelated learner data;
+- preserves observations, assistance, reveals, proposals, policy decisions, disputes, corrections, and accepted commands;
+- selects the required evaluation consequence tier;
+- applies deterministic policy, provenance, version, idempotency, concurrency, and claim-ceiling checks;
+- accepts, narrows, rejects, quarantines, or escalates proposals;
+- appends validated Evidence Records and rebuilds current-state projections.
+
+Harness ownership of the gate does not itself establish pedagogical or psychometric validity. Evaluators, policies, and uses still require evidence, calibration, monitoring, and correction.
+
+## Sealed evaluation boundary
+
+An evidence-eligible task must declare its target, task, Evidence Contract, rubric, interpretation rule, allowed claim scope, and Evaluator identity and version before the Attempt begins. Adaptive item selection is allowed only through a predeclared versioned procedure.
+
+A fresh evaluator invocation must receive:
+
+- sealed learner artifacts or observation references;
+- task, target, Evidence Contract, rubric, and interpretation-rule versions;
+- modality, environment, allowed Tools, and relevant accommodations;
+- all assistance, feedback, exposure, and reveal events that affect interpretation;
+- the maximum claim scope and intended evidence use;
+- the required independence tier, provenance, and trace identity.
+
+It must not receive the Teaching Skill's proposed score, private persuasive rationale, desired learner-state update, irrelevant Persona instructions, or mutable criteria created after observing the response. A Persona may shape learner-facing evaluation language after the decision, but it cannot change criterion results, uncertainty, escalation, or claim scope.
+
+The same underlying Model may teach and evaluate in the initial system only through separate invocations with isolated contexts and recorded dependence. The same invocation may provide formative self-critique but cannot create canonical learner evidence. A separate Model, worker, service, operator, panel, or human reviewer strengthens some dimensions of independence but never substitutes for evaluator validity.
+
+Deterministic, executable, exact, or reference-based checks must run before open-ended Model judgment when they can evaluate the intended construct validly. A Model Evaluator must preserve criterion-level results, observation citations, uncertainty, counterevidence, calibration status, and abstention as a valid outcome.
+
+## Evaluation consequence tiers
+
+Evaluation independence scales with the intended use and maximum claim scope, not with the apparent length or difficulty of the task.
+
+| Tier | Consequence | Minimum boundary |
+| --- | --- | --- |
+| `T0 instructional` | Adapt teaching without changing a learner claim. | Embedded or logically separate formative assessment is allowed. No Evidence Record mutation. |
+| `T1 bounded evidence` | Update one Learning Target interpretation under narrow stated conditions. | Deterministic evaluation where valid, otherwise a fresh sealed evaluator invocation plus Harness validation. |
+| `T2 durable or cross-context claim` | Materially affect broader Capability, routing, or credential-like interpretation. | Corroborating Attempts and a separately invoked calibrated Evaluator, preferably with different failure characteristics; review on uncertainty or conflict. |
+| `T3 disputed or high-stakes` | Affect safety, significant opportunity, formal assessment, external reporting, or a contested record. | Independent service, operator, qualified human, panel, or equivalent governed review. No single Model judgment is dispositive. |
+
+The Harness must preserve which dimensions of independence are present: invocation context, prompt, Model, provider, process, credentials, deployment, operator, rubric author, hidden-material access, and human reviewer. Independence is multidimensional rather than a binary label.
+
+## MVP and evolutionary topology
+
+The MVP is a modular monolith with real logical boundaries:
+
+- one deployable system may host Harness, trusted built-in Teaching Skills, Evaluation Broker, Evaluators, policy gate, evidence journal, command gateway, and projections;
+- typed interfaces and capability denial must prove that Skills and Evaluators cannot call canonical repositories directly;
+- Model-based evidence evaluation uses a fresh sealed invocation;
+- evidence-critical observations and decisions are append-preserved, while current learner state remains a rebuildable projection;
+- every mutating command carries an idempotency key, request hash, expected learner-stream version, exact references, and actor authority;
+- retries with the same key and request return the original semantic result, while reuse with changed content is rejected and audited;
+- replay consumes recorded Model, Tool, human, and external outputs rather than calling them again and assuming identical results;
+- applying a new Evaluator to historical work appends a new proposal and never overwrites the old interpretation silently.
+
+Physical isolation increases only when a real trust, failure, scaling, privacy, provider, operator, or consequence boundary requires it. Introduce isolated workers, durable queues, sandboxed third-party packages, separate credentials or services, and independent review incrementally. Do not distribute an unclear or invalid evaluator across services.
+
+A full append-only design must remain compatible with learner deletion. Raw personal artifacts, projections, caches, backups, and reconstructive identifiers must be deletable under the learner-state contract; any retained tombstone must be non-reconstructive and narrowly justified.
+
 ## Non-negotiable failure boundaries
 
 The system must reject or surface any Teaching Skill that:
@@ -133,6 +209,11 @@ The system must reject or surface any Teaching Skill that:
 - executes without a validated, versioned `TeachingContext` or silently replaces missing canonical inputs with model inference;
 - returns untyped output, directly mutates canonical state, or bypasses the Agent Harness durable-write gate;
 - treats its own evaluation or Evidence Record proposal as accepted evidence without independent harness validation;
+- changes the evidence-eligible rubric, Evaluator, interpretation rule, or claim scope after seeing learner work without invalidating the task and creating a new versioned procedure;
+- uses the same Model invocation both to teach and to produce canonical learner evidence;
+- omits construct-relevant assistance, feedback, exposure, reveal, Tool, modality, or accommodation conditions from the sealed evaluation request;
+- bypasses the required consequence tier, evaluator qualification, calibration, abstention, disagreement, or human-review rule;
+- commits duplicate, stale, non-idempotent, untraceable, or silently overwritten evidence;
 - lacks a versioned `AssistanceAndSolutionRevelationPolicy`;
 - hides agent work or decisive assistance inside conversational style;
 - treats exposure, agreement, copying, completion, or assisted success as independent capability;
