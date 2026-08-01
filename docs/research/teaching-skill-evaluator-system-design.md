@@ -1,272 +1,660 @@
-# Teaching Skill evaluator system-design boundary
+# Teaching Skill, Evaluator, and Agent Harness system-design boundary
 
 Date: 2026-08-01
+Issue: [Socratink Wayfinder #8](https://github.com/jon-devlapaz/socraTink/issues/8)
+Status: Research recommendation for the next founder decision. This document does not itself amend the product contracts.
 
-Scope: system-design grounding for Wayfinder issue #8. This memo asks whether a Teaching Skill should contain its own evaluator or whether evaluation should be a separate versioned component and trust boundary. It addresses architecture, authority, replay, observability, failure isolation, latency, and evolutionary cost. It does not settle domain-specific rubric validity or high-stakes assessment policy.
+## Executive recommendation
 
-## Decision recommendation
+Treat **Teaching Skill**, **Evaluator**, and **Agent Harness** as three logically distinct roles, but do not require three services on day one.
 
-Separate **evaluation authority** from **instructional authority** at the interface and durable-write boundaries, but do not require a separate service for the first implementation.
+1. A **Teaching Skill** elicits and supports learner work. It may produce an instructional self-assessment for immediate adaptation, but it must never certify that its own activity created canonical learner evidence.
+2. An **Evaluator** interprets a sealed set of observations against a versioned rubric and Evidence Contract. It returns a proposal, can abstain, and has no durable-write authority.
+3. The **Agent Harness** is the control plane and sole command authority. It constructs bounded contexts, grants capabilities, preserves append-only observations, selects the evaluator tier, enforces policy, applies idempotent commands, and builds current-state projections.
 
-The minimum defensible architecture is:
+The minimum safe architecture is therefore a **modular monolith with a real logical boundary**:
 
-1. A Teaching Skill receives a versioned `TeachingContext` and emits typed instructional proposals and observation events.
-2. A separately versioned Evaluator receives a narrower `EvaluationContext` containing the frozen learner artifact, declared task and rubric, conditions, and assistance history.
-3. The Evaluator emits an `EvaluationProposal`. It has no durable-write capability.
-4. The Agent Harness applies deterministic schema, permission, provenance, and evidence-contract checks through the durable-write gate.
-5. Only the Harness may append a validated Evidence Record and update derived learner interpretations.
+- trusted, built-in Teaching Skills only;
+- typed `TeachingContext`, `TeachingSkillResult`, `EvaluationRequest`, `EvaluationProposal`, and commit commands;
+- an append-only journal for observations and evidence decisions, plus ordinary relational projections for current state;
+- deterministic harness policy checks at every durable-write gate;
+- a fresh evaluator invocation for any model-judged proposal that could change a learner claim;
+- human review for high-consequence, disputed, low-confidence, novel, or calibration cases.
 
-The separation is **logical and authority-bearing**, not necessarily physical. An MVP may run the Teaching Skill, Evaluator, and gate in one process and may use the same underlying Model in separate invocations. It must still isolate inputs, pin versions, freeze the evaluator before the Attempt, preserve the event trace, and prevent either component from writing canonical state.
+Physical process or service isolation should be added when a component is untrusted, failure-prone, independently scaled, externally operated, or capable of producing consequential learner claims. Arbitrary third-party plugins should not be an MVP feature. When introduced, they should run deny-by-default in a capability sandbox and remain unable to access canonical stores or credentials directly.
 
-A separate process, Model, service, human review, or multiple evaluators becomes necessary when the claim is consequential, subjective, broad, adversarial, poorly calibrated, or expensive to reverse. Physical isolation is a risk-control option. It is not the definition of the boundary.
+A separate model call improves context independence but is not full independence. A different model improves diversity but can retain correlated errors. A separate service improves failure and credential isolation but does not make its judgments valid. Human review supplies a different source of judgment but is slower, costly, and itself requires calibration. Independence is multidimensional, not binary.
 
-## Why the boundary exists
+## Classification of claims in this document
 
-This is not primarily about distrusting a Teaching Skill. It is about avoiding a component that simultaneously:
+To preserve the repository's required epistemic separation, the document uses three categories:
 
-- chooses the task;
-- shapes the learner's response;
-- knows the desired pedagogical outcome;
-- decides whether its own intervention worked;
-- defines what the result means;
-- writes the resulting learner claim.
+- **Established design principle**: supported by official specifications, first-party architecture guidance, or primary evaluation research.
+- **Existing Socratink commitment**: already present in `CONTEXT.md` or an accepted/in-development product contract.
+- **Recommendation or hypothesis**: a proposed Socratink design decision that still needs founder approval, implementation evidence, or product calibration.
 
-That design creates an uninspectable self-certification loop. Even a well-intentioned Model can reinterpret ambiguous work in favor of the plan it just produced, leak hidden tutoring context into scoring, revise criteria after seeing the answer, or conceal how assistance affected the result.
+## Existing Socratink commitments
 
-A typed boundary makes those failures observable and replaceable. It also permits different evaluators for deterministic answers, code execution, oral explanations, open-ended reasoning, transfer tasks, and human review without rewriting the Teaching Skill.
+The local contracts already settle important parts of the boundary:
 
-## Established system-design principles
+1. The Agent Harness is the replaceable runtime that coordinates Models, Tools, Thinking Skills, Teaching Skills, and Persona Packages. Models and Skills do not own learner identity or continuity. See [`CONTEXT.md`](../../CONTEXT.md).
+2. A Teaching Skill executes only from a validated, versioned `TeachingContext`; it cannot silently fill missing canonical state from model inference. See [`teaching-skill-contract.md`](../product/teaching-skill-contract.md).
+3. A Teaching Skill returns a versioned `TeachingSkillResult` and cannot directly mutate durable learner state. Plans, tasks, actions, observations, evaluations, Evidence Record proposals, and Next Learning Action proposals remain distinguishable.
+4. The Agent Harness owns the durable-write gate. It may accept, reject, narrow, quarantine, or return a proposal, and it must preserve the reason.
+5. Raw learner work and append-only execution events may be stored before evaluation, but they remain observations rather than learner claims.
+6. Learner claims change only through validated Evidence Records. Assisted performance remains evidence under the recorded assistance conditions, not automatic evidence of independence. See [`learner-state-contract.md`](../product/learner-state-contract.md).
+7. A Teaching Skill cannot treat its own evaluation as accepted evidence. Persona, Model, Tool, or learner preference cannot bypass constitutional and evidence boundaries.
+8. Historical Attempts and interpretations are not silently overwritten. Corrections, disputes, and recomputation are appended and versioned. Learner deletion must remove selected content from active and recoverable product storage, subject only to narrow, disclosed non-reconstructive records.
 
-### 1. Separate proposals from authoritative writes
+These commitments already imply command/proposal separation. The unresolved question is how independent the Evaluator must be and where logical separation must become process, model, service, operator, or human separation.
 
-Microsoft's CQRS guidance separates commands that express business intent from queries and read models, with validation and domain logic on the write side. It also notes that logical separation can exist in one data store before systems need independent scaling or storage. The relevant Socratink analogy is not a literal application of CQRS. It is the authority split: a skill or evaluator may propose a change, while a distinct write-side gate validates whether canonical state may change. See [Microsoft, CQRS pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs).
+## Established design principles
 
-Open Policy Agent makes a similar distinction between policy decision and policy enforcement. A policy engine returns structured decisions, while the host application remains the enforcement point. Socratink should use the same shape: Evaluators produce interpretations; the Harness enforces evidence and durable-write policy. See [Open Policy Agent documentation](https://www.openpolicyagent.org/docs/latest/).
+### 1. Logical separation and physical separation solve different problems
 
-Product consequence: an `EvaluationProposal` is not an Evidence Record, and an Evidence Record proposal is not a durable learner claim.
+NIST's Zero Trust Architecture distinguishes logical policy components while explicitly noting that one asset may perform several logical roles or one logical role may span several systems.[^nist-zta] Open Policy Agent likewise supports the same policy-decision role as a library, sidecar, or daemon.[^opa] The architecture lesson is that **role separation should be defined first by authority and interface**, then deployed at the isolation level justified by risk.
 
-### 2. Preserve the evidence-critical event history
+Logical separation provides:
 
-Microsoft's event-sourcing guidance describes an append-only event stream that supports auditability and historical reconstruction, but explicitly warns that event sourcing introduces substantial complexity and should be adopted only where its benefits justify the cost. See [Microsoft, Event Sourcing pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/event-sourcing).
+- explicit ownership and contracts;
+- independent tests and versioning;
+- least-privilege data projections;
+- a place to enforce “may propose, may not command”;
+- a migration path to stronger deployment isolation.
 
-Socratink should therefore use **scoped event sourcing**, not declare the entire product event-sourced by default. The evidence-critical path should preserve immutable events for:
+It does not provide:
 
-- task and evaluator selection;
-- task issuance;
-- learner artifacts and modality conditions;
-- assistance, tool, feedback, and reveal events;
-- evaluator invocation and output;
-- gate decision;
-- accepted Evidence Record;
-- later correction, dispute, supersession, or deletion.
+- memory, credential, or runtime isolation;
+- protection from a shared process crash or resource leak;
+- independent model errors when the same invocation and context are reused;
+- operational independence from the same deploy, operator, or provider.
 
-Current learner views may be projections derived from these events. This gives the system enough history to reconstruct why a claim changed without imposing event sourcing on every product object.
+Process or service separation adds failure containment, resource quotas, independent deployment, network policy, and credential boundaries. Microsoft's Bulkhead pattern recommends isolating resource pools so a failing dependency or consumer cannot exhaust resources needed by unrelated work.[^bulkhead] However, service boundaries add network failure modes, eventual consistency, retries, observability work, and operational cost. A service boundary should therefore correspond to a real trust, failure, scaling, or organizational boundary, not merely a different noun in the domain model.
 
-### 3. Replay requires versioned orchestration and isolated nondeterminism
+### 2. Untrusted plugins require a capability boundary, not an interface alone
 
-Temporal's workflow documentation requires deterministic workflow code for replay and moves nondeterministic operations such as API calls, database queries, and LLM invocations into separately recorded Activities. Workflow code changes require versioning because replayed commands must match prior event history. See [Temporal Workflow Definition](https://docs.temporal.io/workflow-definition).
+A typed plugin interface prevents accidental coupling but does not stop malicious or compromised code from reading process memory, opening sockets, accessing files, or calling internal libraries. WASI's security model is deny-by-default: a component begins with no ambient authority and can act only through capabilities explicitly granted by the host at the runtime boundary.[^wasi-security] The WebAssembly Component Model also provides statically inspectable typed imports and exports across separately compiled components.[^component-model]
 
-Socratink need not adopt Temporal, but the invariant is useful:
+Therefore, when Socratink accepts third-party Teaching Skills or Evaluators, the host should grant narrow capabilities such as:
 
-- orchestration decisions must be reproducible from versioned inputs and recorded events;
-- Model calls are nondeterministic activities whose inputs, outputs, provider, Model, parameters, prompt or policy version, and timing must be recorded;
-- a historical evaluation is replayable only against its original versions or explicitly re-evaluated as a new interpretation.
+- read a specific immutable `TeachingContext` or `EvaluationRequest`;
+- emit a size-bounded typed proposal;
+- request only explicitly allowed Tools through a mediated broker;
+- write only to temporary scratch storage with quotas;
+- use network access only through declared, policy-checked destinations;
+- consume bounded CPU, memory, wall-clock time, tokens, and concurrent calls.
 
-Re-running a newer Evaluator over an old Attempt must create a new evaluation proposal. It must not silently rewrite the historical record.
+Canonical learner stores, policy bundles, signing keys, provider credentials, hidden evaluation materials, and other learners' data must not be ambient plugin capabilities.
 
-### 4. Typed component interfaces improve containment and replacement
+### 3. Observations and decisions should be append-preserved, while current state should be projected
 
-The WebAssembly Component Model uses explicit interfaces and enforced calling contracts between separately compiled modules. Components interact only through declared imports and exports, allowing implementation language and deployment details to vary behind the contract. See [Bytecode Alliance, Why the Component Model?](https://component-model.bytecodealliance.org/design/why-component-model.html).
+Microsoft's Event Sourcing guidance describes an append-only event stream as a system of record that can support historical reconstruction, auditability, and new projections, while warning that full event sourcing is complex and constrains schema evolution, concurrency, and querying.[^event-sourcing] CQRS separates commands that change state from queries that read it and can improve security by narrowing write paths.[^cqrs]
 
-Socratink does not need WebAssembly for the MVP. The system-design lesson is that a trust boundary begins with a narrow typed interface and capability set. A Teaching Skill should not receive a database handle. An Evaluator should not receive a durable-write handle. A Persona should not receive either. Future plugin sandboxing can strengthen the same interfaces without changing the domain contract.
+The appropriate Socratink conclusion is **scoped event sourcing**, not “event-source everything”:
 
-### 5. Evaluation must be designed, logged, and calibrated
+- append immutable observations of what occurred;
+- append evaluator proposals, policy decisions, accepted commands, corrections, disputes, and deletion tombstones;
+- derive Learner Target Interpretations, Capability Interpretations, queues, and dashboards as replaceable projections;
+- keep ordinary mutable storage for caches, ephemeral contexts, job leases, and other non-canonical runtime data.
 
-OpenAI's official evaluation guidance recommends task-specific evals, early and continuous evaluation, extensive logging, automated scoring when appropriate, and human feedback to calibrate automated metrics. It warns against generic metrics, biased datasets, vibe-based evaluation, and ignoring human judgment. It also recommends comparison, classification, or criteria-based scoring over unconstrained generation where possible. See [OpenAI, Evaluation best practices](https://platform.openai.com/docs/guides/evaluation-best-practices.md).
+An observation is not a command. An evaluator proposal is not a command. A policy decision authorizes or rejects a command. An accepted command appends a canonical decision event. This makes the distinction in the Teaching Skill contract enforceable rather than rhetorical.
 
-OpenAI's grader documentation treats a model grader as a separate model role that evaluates another output and defines grader configuration as structured data. It also demonstrates combining deterministic, similarity, code, and model-based graders. See [OpenAI, Graders](https://platform.openai.com/docs/guides/graders.md).
+CloudEvents supplies a useful interoperable envelope model: an event records an occurrence and context; `source + id` identifies duplicates; and `type`, `specversion`, and `dataschema` make routing and interpretation explicit.[^cloudevents] Socratink need not adopt CloudEvents wholesale, but should preserve equivalent semantics.
 
-Product consequence: use the simplest valid evaluator first. Deterministic checks, executable tests, exact constraints, and reference comparisons should precede open-ended model judgment. Model-based evaluation must declare uncertainty and be calibrated against human or expert judgments for the intended use.
+### 4. Replay means replaying recorded facts and decisions, not asking a model to repeat itself
 
-### 6. Separate focused calls can outperform one overloaded call
+Temporal requires deterministic workflow code so replay emits the same command sequence from the same recorded history. It specifically places API calls, database queries, and LLM invocations outside the replay path as Activities whose results are recorded.[^temporal]
 
-Anthropic's agent architecture guidance recommends simple, composable patterns and increasing complexity only when needed. It describes prompt chaining with programmatic gates, routing for separation of concerns, parallel evaluator calls for different criteria, and an evaluator-optimizer workflow where one Model call generates and another evaluates against explicit criteria. It also notes that multiple calls trade latency and cost for performance. See [Anthropic, Building effective agents](https://www.anthropic.com/engineering/building-effective-agents).
+For Socratink:
 
-Product consequence: do not force one tutoring invocation to teach, score, police policy, and certify evidence simultaneously. A separate invocation creates a cleaner attention surface even when it uses the same Model.
+- the harness reducer and policy rules should be deterministic for a given event stream and version set;
+- model calls, human decisions, Tool results, timestamps, randomness, and external retrieval are nondeterministic activities;
+- replay must consume their recorded outputs, not reissue them and assume identical answers;
+- a new evaluation is a new event referencing the original observations and a new evaluator version, never a silent replacement of the old result;
+- workflow or reducer changes require explicit version routing or migration.
 
-### 7. End-to-end tracing must cross process boundaries
+Exact model-output reproduction may be impossible even with the same nominal model, parameters, and seed. The reproducibility promise should be: **reconstruct why the current state exists and deterministically rebuild it from preserved inputs, outputs, decisions, and versions**, not “regenerate the same prose or judgment.”
 
-OpenTelemetry models a trace as correlated spans that can cross processes, services, machines, and data centers. Span context and trace IDs preserve the full path of one operation. See [OpenTelemetry, Traces](https://opentelemetry.io/docs/concepts/signals/traces/).
+### 5. Provenance must identify artifacts, activities, agents, and resolved dependencies
 
-Every evidence-eligible learning interaction should have one trace identity connecting plan, task, learner artifact, assistance, evaluator, gate decision, and committed record. Physical separation must not break causal observability.
+W3C PROV models provenance in terms of entities, activities, and agents so consumers can assess quality, reliability, and trustworthiness.[^w3c-prov] SLSA provenance similarly records what produced an artifact, the process definition, external parameters, and resolved dependencies, and treats external parameters as untrusted inputs that downstream policy must verify.[^slsa] The in-toto attestation specification binds statements to subjects, versions predicate types by major version, and recommends monotonic policy behavior where ignoring unknown evidence cannot turn a deny into an allow.[^in-toto]
 
-### 8. Risk management applies across the AI lifecycle
+Every evidentiary run should therefore record stable identities or content digests for:
 
-NIST's Generative AI Profile extends the AI Risk Management Framework to the design, development, use, and evaluation of generative AI systems. See [NIST AI 600-1](https://doi.org/10.6028/NIST.AI.600-1). The architectural implication for Socratink is conservative: evaluation quality, monitoring, provenance, and human accountability cannot be delegated entirely to an opaque Model invocation, especially when the resulting claim affects a learner's route or self-understanding.
+- `TeachingContext` and active Learning Target/Evidence Contract/Map Revision;
+- Teaching Skill package, manifest, prompt/template, assistance policy, and runtime;
+- task, rubric, evaluator package, evaluator prompt/template, model/provider identifier, and generation settings;
+- Tool manifests and material Tool results;
+- learner artifact and modality-specific source artifact, such as original audio plus transcript metadata;
+- observations and assistance/reveal events;
+- policy bundle, command schema, reducer/projection version, and human-review protocol;
+- parent run, retry, supersession, correction, dispute, and deletion relationships.
 
-## Socratink product commitments
+A provider's model name is not necessarily an immutable artifact digest. Store the exact provider-reported identifier, response ID, request configuration, timestamps, and any exposed revision metadata, while preserving the caveat that weights and serving infrastructure may still change.
 
-The following are constitutional product choices, not conclusions forced by generic architecture literature:
+### 6. Idempotency must be part of every mutating contract
 
-- learner work remains distinct from Agent Actions;
-- assistance conditions constrain what performance demonstrates;
-- only validated Evidence Records may update learner interpretations;
-- a Persona may shape presentation but not evaluation criteria or evidence scope;
-- the learner may inspect, dispute, correct, export, and delete the evidence trail;
-- evaluator outputs preserve uncertainty, counterevidence, and maximum claim scope;
-- current learner state remains a projection over preserved evidence rather than an unexplained Model memory.
+AWS's idempotent API guidance recommends a caller-provided request identifier, atomic recording of the identifier with the mutation, semantically equivalent responses for retries, and rejection when the same identifier is reused with different parameters.[^aws-idempotency] CloudEvents similarly permits consumers to treat identical `source + id` pairs as duplicate deliveries.[^cloudevents]
 
-## Four deployment options
+Socratink commit operations should therefore require:
 
-| Option | Boundary quality | Cost and latency | Appropriate use | Main failure |
-| --- | --- | --- | --- | --- |
-| Evaluator embedded in the same tutoring invocation | Weak | Lowest | Non-evidentiary conversational feedback only | Hidden self-certification and context leakage |
-| Separate evaluator interface and invocation in the same process, possibly same Model | Strong enough for MVP when enforced | Low to moderate | Most low-stakes learning evidence | Shared implementation bugs or correlated Model bias |
-| Separate Model or isolated worker process | Stronger failure and context isolation | Moderate | Subjective, adversarial, or broader claims | Added latency, cost, retries, and operational complexity |
-| Independent service, multiple raters, or human review | Strongest practical oversight | Highest | High-stakes, consequential, disputed, or poorly calibrated claims | Workflow delay, reviewer inconsistency, and expense |
+- an `idempotencyKey` scoped to actor and command type;
+- a canonical request hash;
+- atomic persistence of key, request hash, appended decision event, and receipt;
+- return of the original semantic receipt for a duplicate identical request;
+- rejection and audit alert for the same key with a different request hash.
 
-The correct progression is not "microservices are safer." It is:
+Retries should have one owner per call chain. AWS warns that retries at multiple layers multiply load, recommends capped backoff and jitter, and notes that side-effecting operations are unsafe to retry without idempotency.[^aws-retries] Evaluator invocation may be retried because it produces only a proposal, but duplicate proposals must remain linked to one evaluation request and cannot create duplicate Evidence Records.
 
-> Preserve the logical authority boundary from day one, then increase physical and human independence when measured risk warrants it.
+### 7. Policy decisions belong at explicit enforcement points
+
+NIST separates a policy engine that makes and logs a decision, a policy administrator that executes it, and a policy enforcement point that permits only approved access.[^nist-zta] OPA's architecture likewise decouples policy decisions from the governed service.[^opa]
+
+For Socratink, hard constitutional and evidence invariants should be enforced by deterministic code or declarative policy at these points:
+
+1. **Package admission**: signature/digest, publisher, schema compatibility, validation status, requested capabilities.
+2. **Context construction**: learner authorization, target and map versions, purpose, data minimization, freshness, modality, accessibility, and consent.
+3. **Pre-execution grant**: Tool, network, filesystem, model, token, time, and concurrency capabilities.
+4. **Observation admission**: schema, artifact integrity, run identity, provenance, size limits, and tenant boundary.
+5. **Evaluation dispatch**: evaluator qualification, independence tier, hidden-material access, conflict of interest, and calibration status.
+6. **Durable commit**: target/version match, assistance and reveal accounting, evaluator scope, uncertainty, claim ceiling, idempotency, stale-write check, and prohibited agent-work credit.
+7. **Projection and export**: schema/version compatibility, redaction, learner visibility, and deletion state.
+8. **Human override or dispute**: reviewer authority, rationale, conflict disclosure, and whether a second review is required.
+
+An LLM may help propose interpretations, but should not be the sole enforcement mechanism for invariants such as tenant isolation, required fields, version matching, idempotency, permissions, prohibited claim widening, or direct-write denial.
+
+### 8. Model-as-judge is useful but not self-validating
+
+OpenAI recommends combining metrics with human judgment, maintaining human agreement to calibrate automated scoring, using held-out examples, and validating an LLM judge against human labels before optimizing for cost or latency.[^openai-evals] Anthropic recommends combining code-based, model-based, and human graders; running multiple trials for nondeterministic systems; grading outcomes as well as transcripts; and calibrating model graders with humans.[^anthropic-evals]
+
+The primary MT-Bench study found that strong LLM judges could exceed 80% agreement with human preferences in its setting, but also documented position bias, verbosity bias, self-enhancement bias, and limited reasoning ability.[^mtbench] Those findings support bounded use, not universal validity.
+
+Consequences for Socratink:
+
+- Same-invocation self-grading is an instructional reflection signal, not independent evidence evaluation.
+- A fresh call with a sealed context reduces anchoring and accidental context leakage, but the same base model can retain correlated errors and self-enhancement bias.
+- A different model or provider adds diversity, not ground truth.
+- Deterministic checks should grade what can be mechanically verified before an LLM is asked to judge nuanced qualities.
+- Evaluators must be allowed to abstain, narrow maximum claim scope, request another task, or escalate.
+- Judge agreement must be measured by target class, modality, assistance condition, language, accessibility condition, and consequence, not only by one aggregate score.
+- Model, rubric, prompt, or task-distribution changes invalidate prior calibration until checked.
+
+### 9. Independent assessment should scale with consequence
+
+NIST's Generative AI Profile recommends policies for independent evaluations whose type and robustness are proportional to identified risks, inventories human-oversight responsibilities and model versions, and calls for contingency processes for high-risk third-party failures.[^nist-ai-600-1]
+
+This supports a tiered evaluator architecture rather than one universal deployment:
+
+- low-consequence formative feedback can favor speed;
+- learner-claim mutation requires stronger separation and provenance;
+- high-stakes, disputed, safety-relevant, or materially consequential claims require independent review proportional to risk.
+
+Human reviewers remain fallible. They need blinded or randomized presentation where appropriate, explicit rubrics and examples, multiple review for selected cases, disagreement handling, and periodic calibration.
+
+## Comparison of evaluator isolation options
+
+| Option | Boundary actually gained | Main strengths | Main weaknesses and leakage risks | Latency/cost | Appropriate Socratink use |
+| --- | --- | --- | --- | --- | --- |
+| **A. Embedded evaluator inside the Teaching Skill** | No evaluator authority boundary. Same code, context, invocation, incentives, and failure domain. | Lowest latency and cost; immediate adaptive feedback; simple prototype; can use deterministic local checks. | Direct self-certification risk; sees the skill's own rationale and intended conclusion; shared prompt injection and compromise; no independent failure signal; model can reward its own style or verbosity. | Lowest. | Formative feedback, hint selection, self-checks, and proposed task adaptation only. Never sufficient by itself to mutate a learner claim. Deterministic results may be reverified by the harness. |
+| **B. Logically separate Evaluator in the same process and model context** | Separate interface, schema, tests, and authorization role. Still shares memory, credentials, deploy, runtime resources, and possibly the same conversational context. | Establishes clean contracts; easiest migration path; allows least-data projection and independent unit tests; no network complexity. | Not a security or failure boundary; shared-process compromise; same-context anchoring; same model biases; a crash or resource leak can affect both. | Low. | MVP architecture for trusted built-ins, provided the evaluator returns proposals only and the harness independently enforces all hard policy. Prefer a fresh invocation even if implementation remains in one process. |
+| **C. Separate invocation and/or model** | Fresh prompt/context; optionally separate model, provider, credentials, queue, and worker pool. Can blind evaluator to the skill's proposed score and hidden reasoning. | Better epistemic separation; less accidental leakage; independent retry/timeout budget; model diversity; clearer calibration and A/B testing. | Additional latency and token cost; provider outages; still correlated training data and model errors; different model is not automatically more valid; must protect hidden materials and learner data in transit. | Medium and variable. | Default for model-based evaluation that may produce a durable Evidence Record proposal. Use deterministic grading first, then a fresh judge call only for unresolved rubric dimensions. |
+| **D. Separate service and/or human review** | Process, credential, deployment, resource, and possibly operator/organizational isolation. Human review adds a different judgment source. | Strongest bulkhead and audit boundary; independent release cadence; specialist reviewers; suitable for disputes and high-consequence decisions. | Highest operational complexity, queueing delay, cost, privacy surface, and availability dependence; distributed consistency and retry concerns; humans disagree and need calibration. | Highest. | High-stakes or durable cross-context Capability claims, disputes, low confidence, evaluator disagreement, novel modalities, safety/accessibility concerns, calibration samples, and incident review. Not required for every interaction. |
+
+### Independence dimensions to record explicitly
+
+Do not store a single Boolean such as `independent: true`. Record dimensions:
+
+- `authority`: can only propose, or can authorize/commit;
+- `context`: same context, sealed fresh context, or blinded context;
+- `model`: same invocation, same model/new invocation, different model, or no model;
+- `runtime`: same component, process, sandbox, worker pool, or service;
+- `credentials`: shared or separate;
+- `operator`: same team/provider, independent reviewer, or external assessor;
+- `data`: which rubric, reference, learner artifact, assistance history, and hidden materials were visible;
+- `calibration`: dataset/version, population slices, date, metrics, and approval status.
+
+## Recommended Socratink boundary
+
+The following is a **recommendation pending founder approval**.
+
+### Role authority
+
+#### Teaching Skill
+
+May:
+
+- propose a Teaching Plan, Learning Task, Instructional Action, assistance event, reveal event, and Next Learning Action;
+- preserve learner work through harness-mediated observation APIs;
+- produce an `InstructionalAssessment` used to adapt the current teaching sequence;
+- request an evidence evaluation with a declared claim ceiling.
+
+May not:
+
+- choose an evaluator implementation solely to obtain a favorable score;
+- access hidden verification answers or calibration labels;
+- write an Evidence Record or current learner interpretation;
+- present its own assessment as independently validated evidence;
+- retry a failed learner task in a way that erases prior observations.
+
+#### Evaluator
+
+May:
+
+- evaluate exact observation references against one rubric and Evidence Contract version;
+- return criterion results, evidence citations, uncertainty, counterevidence, warnings, maximum claim scope, and an abstain/escalate decision;
+- request missing observation data or fresh verification.
+
+May not:
+
+- modify learner artifacts, task conditions, assistance history, or the rubric;
+- issue canonical commands;
+- silently widen the intended claim;
+- see the Teaching Skill's proposed score or private rationale by default;
+- call arbitrary Tools or network destinations outside its granted capability set.
+
+#### Agent Harness
+
+Must:
+
+- resolve the evaluator from policy, claim consequence, modality, calibration, availability, and conflicts;
+- seal and hash the Evaluation Request;
+- preserve observations before evaluation;
+- enforce package, context, capability, evaluation, commit, and projection policies;
+- own idempotency, retries, timeouts, quarantines, and human escalation;
+- append every proposal and policy decision with provenance;
+- apply canonical commands atomically and update or rebuild projections;
+- expose the evidence trail, dispute route, and current operative interpretation to the learner.
+
+### Evaluation consequence tiers
+
+| Tier | Intended consequence | Minimum evaluator boundary | Human role |
+| --- | --- | --- | --- |
+| **T0: instructional** | Adapt hints, examples, feedback, or next task. No learner-claim mutation. | Embedded or logically separate evaluation is allowed. Preserve assistance and reveal effects. | Optional product review. |
+| **T1: bounded low-stakes Evidence Record** | Update one Learning Target interpretation with narrow scope and explicit conditions. | Deterministic grading where possible. Otherwise fresh sealed evaluator invocation. Harness hard-policy validation is mandatory. | Random calibration sample, plus escalation on abstention/disagreement. |
+| **T2: durable or cross-context claim** | Materially affect a Capability interpretation, route, credential-like assertion, or consequential recommendation. | Separate invocation and preferably a different calibrated model or independent deterministic evaluator. Consider separate worker/service pool. Require corroborating Attempts across contexts or time. | Required for low confidence, conflicts, sampled quality control, and policy-defined high consequence. |
+| **T3: disputed or high-stakes** | Safety-critical, formal assessment, significant opportunity, contested record, severe accessibility/modality uncertainty, or external reporting. | Separate service/operator boundary or qualified human evaluation. No single model judge is dispositive. | Required, with explicit rubric, conflict handling, and possibly dual review. |
+
+Socratink should define consequence from intended use and maximum claim scope, not from the surface form of the task. A short answer can be high-stakes; a long project can remain formative.
 
 ## Recommended interfaces
 
-```text
-TeachingSkill.plan(TeachingContext) -> TeachingSkillResult
-Evaluator.evaluate(EvaluationContext) -> EvaluationProposal
-EvidenceGate.validate(EvidenceCommand) -> GateDecision
-EvidenceStore.append(ValidatedEvidenceEvent) -> AppendReceipt
+The schemas below are illustrative. Field names and encoding remain hypotheses until implementation design.
+
+```ts
+interface TeachingSkill {
+  manifest(): TeachingSkillManifest;
+  execute(request: TeachingRunRequest): Promise<TeachingSkillResult>;
+}
+
+interface TeachingRunRequest {
+  runId: string;
+  contextRef: VersionedRef<"TeachingContext">;
+  requestedAction: "plan" | "continue" | "respond_to_attempt" | "stop";
+  capabilityGrantRef: VersionedRef<"CapabilityGrant">;
+  idempotencyKey: string;
+}
+
+interface TeachingSkillResult {
+  schemaVersion: string;
+  runId: string;
+  status: TeachingStatus;
+  proposedPlans: TeachingPlanProposal[];
+  proposedTasks: LearningTaskProposal[];
+  proposedActions: InstructionalActionProposal[];
+  observations: ObservationCandidate[];
+  instructionalAssessment?: InstructionalAssessment;
+  evaluationRequestCandidate?: EvidenceEvaluationRequestCandidate;
+  provenance: ExecutionProvenance;
+  warnings: Finding[];
+}
 ```
 
-### `EvaluationContext`
+```ts
+interface ObservationEnvelope {
+  schemaVersion: string;
+  observationId: string;
+  source: string;
+  type: string;
+  subjectRefs: VersionedRef[];
+  runId: string;
+  attemptId?: string;
+  occurredAt?: string;
+  recordedAt: string;
+  artifactRefs: ContentRef[];
+  conditions: ObservationConditions;
+  assistanceRefs: VersionedRef<"AssistanceEvent">[];
+  revealRefs: VersionedRef<"SolutionRevealEvent">[];
+  producer: ComponentProvenance;
+  integrity: IntegrityMetadata;
+}
+```
 
-The Evaluator receives only what is required to apply the declared Evidence Contract:
+```ts
+interface Evaluator {
+  manifest(): EvaluatorManifest;
+  evaluate(request: EvaluationRequest): Promise<EvaluationProposal>;
+}
 
-- evaluator, rubric, interpretation-rule, target, and task versions;
-- frozen learner artifact and content hash;
-- modality and environmental conditions;
-- allowed Tools and relevant accommodations;
-- assistance, feedback, exposure, and reveal events;
-- declared evidence use and maximum permissible claim;
-- relevant references or executable fixtures;
-- trace identity and provenance.
+interface EvaluationRequest {
+  evaluationRequestId: string;
+  schemaVersion: string;
+  targetRef: VersionedRef<"LearningTarget">;
+  evidenceContractRef: VersionedRef<"EvidenceContract">;
+  rubricRef: VersionedRef<"Rubric">;
+  observationRefs: VersionedRef<"Observation">[];
+  taskRef: VersionedRef<"LearningTask">;
+  conditionsRef: VersionedRef<"AttemptConditions">;
+  allowedClaimScope: ClaimScope;
+  disclosureProfile: EvaluatorDisclosureProfile;
+  independenceRequirement: IndependenceRequirement;
+  idempotencyKey: string;
+  requestHash: string;
+}
 
-It should not receive:
+interface EvaluationProposal {
+  evaluationProposalId: string;
+  evaluationRequestId: string;
+  status: "supported" | "weakened" | "unresolved" | "abstained" | "failed";
+  criterionResults: CriterionResult[];
+  observationCitations: ObservationCitation[];
+  uncertainty: UncertaintyStatement;
+  counterevidence: Counterevidence[];
+  maximumClaimScope: ClaimScope;
+  recommendedDisposition: "accept" | "narrow" | "fresh_task" | "human_review" | "reject";
+  evaluatorProvenance: EvaluatorProvenance;
+  calibrationRef?: VersionedRef<"CalibrationReport">;
+  warnings: Finding[];
+}
+```
 
-- the Teaching Skill's hidden reasoning or desired result;
-- Persona instructions unrelated to the construct;
-- a request to confirm a planned learner-state update;
-- mutable criteria generated after observing the response;
-- unrestricted access to learner history;
-- database or durable-write capabilities.
+```ts
+interface EvidenceCommandGateway {
+  commit(command: CommitEvidenceCommand): Promise<CommitReceipt>;
+}
 
-### `EvaluationProposal`
+interface CommitEvidenceCommand {
+  commandId: string;
+  idempotencyKey: string;
+  requestHash: string;
+  expectedLearnerStreamVersion: number;
+  teachingContextRef: VersionedRef<"TeachingContext">;
+  observationRefs: VersionedRef<"Observation">[];
+  evaluationProposalRefs: VersionedRef<"EvaluationProposal">[];
+  policyDecisionRef: VersionedRef<"PolicyDecision">;
+  proposedEvidenceRecord: EvidenceRecordCandidate;
+  actor: AuthorizedActor;
+}
+```
 
-The proposal contains:
+Required behavioral rules:
 
-- evaluator identity, version, content hash, and execution environment;
-- criterion-level observations and results;
-- referenced learner-artifact spans or executable outputs;
-- deterministic checks and Model judgments kept distinguishable;
-- uncertainty, disagreement, counterevidence, and calibration status;
-- assistance-conditioned interpretation;
-- maximum claim scope;
-- recommended next action;
-- warnings, failures, and escalation requirements;
-- complete trace and provenance references.
+- Same `idempotencyKey` and request hash returns the original receipt.
+- Same key with a different hash is rejected and audited.
+- `expectedLearnerStreamVersion` prevents stale commits.
+- Evaluator output cannot be embedded as an opaque free-text authority. Criterion results must cite observations and bind to a rubric version.
+- `InstructionalAssessment` and `EvaluationProposal` are different types and cannot be implicitly cast.
+- `abstained` is a valid, non-failure outcome.
 
-### `GateDecision`
+## Trust boundaries
 
-The Harness may return:
+| Boundary | Trusted for | Not trusted for | Enforcement |
+| --- | --- | --- | --- |
+| **Teaching Skill package** | Producing typed instructional proposals within declared scope. | Canonical state, evaluator choice, policy interpretation, secret access, self-certification. | Admission validation, signed/digested manifest, capability grant, quotas, sandbox for third parties. |
+| **Evaluator package/model** | Producing a bounded interpretation proposal under a named rubric. | Ground truth, command authority, claim widening, tenant access, stable behavior across versions. | Sealed request, least data, calibration gate, output schema, timeout, abstention, human escalation. |
+| **Agent Harness control plane** | Policy enforcement, command authorization, idempotency, routing, provenance, projection. | Pedagogical or psychometric validity merely by implementation ownership. | Code review, deterministic tests, policy tests, audit, separation of operator privileges. |
+| **Canonical event and artifact stores** | Preserving accepted history and referenced artifacts according to retention/deletion policy. | Inferring meaning from raw events. | Append authorization, integrity checks, encryption, tenant isolation, backup and deletion controls. |
+| **Model/Tool provider** | Returning the requested service result under its contract. | Learner-state ownership, immutable versions, evidence validity, private retention assumptions not contractually verified. | Data minimization, provider policy, scoped credentials, response provenance, fallback and incident plans. |
+| **Human reviewer** | Authorized expert judgment within assigned scope. | Infallibility, unconstrained access, silent overwrite, or unlogged override. | Least-data review packet, conflict disclosure, rubric, rationale, review sampling, append-only decision. |
 
-- `accepted`;
-- `accepted_with_narrower_scope`;
-- `needs_second_evaluator`;
-- `needs_human_review`;
-- `quarantined`;
-- `rejected_invalid_context`;
-- `rejected_policy_violation`;
-- `rejected_schema_or_provenance`;
-- `rejected_evaluator_failure`.
+The Harness and canonical stores form the evidence control-plane trusted computing base. This base should be kept smaller than the set of Skills, Evaluators, Models, and Tools it governs.
 
-Every decision preserves a reason and exact versions.
+## Evaluation leakage and self-certification controls
 
-## Reference execution sequence
+1. **Separate public criteria from secret verification material.** Learners and Skills may need a transparent rubric. Reference answers, novel transfer item pools, anti-gaming checks, calibration labels, and reviewer assignments may still require restricted access.
+2. **Blind the evaluator to the Skill's conclusion by default.** Send learner work, task, conditions, assistance, and rubric. Do not send the Skill's proposed score, persuasive rationale, or desired learner-state update unless the evaluator is explicitly auditing that proposal.
+3. **Do not reuse the same model invocation.** A model may critique its own teaching for adaptation, but evidence evaluation should use a fresh request with a sealed disclosure profile.
+4. **Treat same-model and same-provider judgments as correlated.** Record model diversity rather than calling it independence.
+5. **Protect held-out calibration sets.** A Skill or evaluator prompt optimized directly on all calibration examples can overfit. Maintain versioned holdouts and rotate adversarial cases.
+6. **Separate development feedback from production certification.** Teams may inspect failed eval cases, but promotion should include an untouched or access-controlled set.
+7. **Score outcomes before rhetoric.** Where possible, verify the resulting artifact or state rather than trusting a transcript claim that the learner succeeded.
+8. **Record all assistance visible to the learner.** Hiding assistance from the evaluator creates false independence claims; revealing unnecessary Skill rationale creates anchoring. The disclosure profile must distinguish these.
+9. **Never expose hidden verification answers before observation sealing.** If exposure occurs, append a reveal event and lower the maximum claim scope.
+10. **Audit evaluator access.** Hidden materials and learner artifacts are sensitive capabilities. Log which evaluator version accessed which references for which purpose.
+
+## Deterministic replay and projection model
+
+The recommended evidence stream contains immutable event types such as:
+
+- `TeachingRunStarted`
+- `InstructionalActionProposed`
+- `AssistanceProvided`
+- `SolutionRevealed`
+- `LearnerArtifactObserved`
+- `ObservationSealed`
+- `EvaluationRequested`
+- `EvaluationProposed`
+- `PolicyDecisionRecorded`
+- `HumanReviewRequested`
+- `HumanReviewDecided`
+- `EvidenceCommitAccepted`
+- `EvidenceCommitRejected`
+- `EvidenceRecordDisputed`
+- `EvidenceInterpretationCorrected`
+- `LearnerContentDeleted`
+- `ProjectionVersionActivated`
+
+A deterministic projector consumes these events and produces current read models. Rebuilding with the same event bytes, event order, reducer version, and policy-defined migration path must produce the same projection bytes. A new evaluator does not alter old events; it emits a new `EvaluationProposed` event. A correction or dispute appends a new event and triggers recomputation.
+
+### Deletion caveat
+
+Pure append-only storage conflicts with the learner contract's right to permanent deletion if raw personal content remains in the log or backups. Socratink should separate:
+
+- minimally identifying event metadata and non-reconstructive tombstones;
+- encrypted, content-addressed learner artifacts;
+- projections and caches.
+
+Deletion should remove active and recoverable artifact payloads, destroy applicable encryption keys, purge projections/caches/backups under a documented policy, append a non-reconstructive deletion tombstone where legally and contractually allowed, and recompute dependent claims. Hashes can themselves be identifying or permit dictionary attacks, so “keep only the hash” is not automatically non-reconstructive. Exact legal and storage semantics require separate privacy design.
+
+## Sequence diagram
 
 ```mermaid
 sequenceDiagram
+    actor L as Learner
     participant H as Agent Harness
     participant S as Teaching Skill
-    participant L as Learner
+    participant J as Append-only Journal
+    participant B as Evaluation Broker
     participant E as Evaluator
-    participant G as Evidence Gate
-    participant R as Evidence Store
+    participant P as Policy Decision Point
+    participant C as Command Gateway
+    participant R as Read-model Projector
+    participant HR as Human Review
 
-    H->>S: TeachingContext snapshot
-    S-->>H: TeachingPlan and LearningTask proposal
-    H->>H: Validate and freeze task, rubric, evaluator, policy
-    H->>L: Issue Learning Task
-    L-->>H: Learner artifact
-    H->>H: Append artifact, assistance, tool, and reveal events
-    H->>E: Narrow EvaluationContext
-    E-->>H: EvaluationProposal
-    H->>G: EvidenceCommand plus full trace
-    G-->>H: GateDecision
-    alt accepted
-        H->>R: Append validated Evidence Record
-        R-->>H: AppendReceipt
-    else review or rejection
-        H->>H: Preserve reason, quarantine, or escalate
+    L->>H: Learner work / help / stop input
+    H->>H: Validate TeachingContext and capability grant
+    H->>S: TeachingRunRequest (bounded snapshot)
+    S-->>H: TeachingSkillResult (proposals only)
+    H->>J: Append actions, assistance, reveals, and observations
+    J-->>H: Observation refs + stream version
+
+    alt Non-evidentiary instructional result
+        H-->>L: Feedback or next task
+    else Evidence evaluation requested
+        H->>B: Sealed EvaluationRequest + independence tier
+        B->>E: Least-data evaluation packet
+        E-->>B: EvaluationProposal or abstention
+        B-->>H: Proposal + provenance + calibration ref
+        H->>J: Append evaluation proposal
+        H->>P: Authorize proposed Evidence Record
+        P-->>H: Accept, narrow, reject, or review
+        H->>J: Append policy decision
+
+        alt Accepted or narrowed
+            H->>C: Idempotent CommitEvidenceCommand
+            C->>J: Atomically append accepted command event
+            C-->>H: CommitReceipt
+            J-->>R: New canonical event
+            R->>R: Deterministically update projections
+            H-->>L: Evidence result, scope, uncertainty, and appeal route
+        else Human review required
+            H->>HR: Least-data review packet
+            HR-->>H: Versioned decision + rationale
+            H->>J: Append human decision
+            H->>P: Re-authorize with review evidence
+        else Rejected or evaluator unavailable
+            H-->>L: Preserve work; no claim mutation; retry, reroute, or explain
+        end
     end
 ```
 
 ## Failure matrix
 
-| Failure | Required system response |
-| --- | --- |
-| Teaching Skill changes rubric after seeing the response | Reject evaluation eligibility and preserve the mutation attempt. |
-| Evaluator receives hidden tutor reasoning or desired score | Mark evaluation context contaminated and rerun with isolated context. |
-| Same invocation both teaches and scores | Treat as formative feedback only unless a separate valid evaluation occurs. |
-| Evaluator times out or crashes | Preserve the learner artifact, retry idempotently, and create no learner claim. |
-| Duplicate delivery after retry | Deduplicate by evaluation invocation and artifact content IDs. |
-| Evaluator version unavailable for replay | Preserve historical result; do not claim exact replay; require explicit re-evaluation under a new version. |
-| Deterministic and Model graders disagree | Preserve both, narrow the claim, and escalate according to policy. |
-| Two Model evaluators disagree materially | Record disagreement and require adjudication or additional evidence. |
-| Persona language leaks into rubric judgment | Reject or quarantine the proposal as policy contamination. |
-| Agent-generated work appears inside learner artifact | Separate spans and exclude Agent Actions from learner credit. |
-| Gate service unavailable | Queue the proposal and preserve observations; do not bypass the gate. |
-| Evidence append succeeds but projection update fails | Rebuild the projection from the accepted event stream. |
+| Failure | Detection | Required behavior | Evidence consequence | Retry/escalation |
+| --- | --- | --- | --- | --- |
+| Teaching Skill timeout or crash | Deadline, heartbeat, process exit. | Stop granted capabilities; preserve already sealed observations; return typed failure. | No inferred learner failure and no claim mutation. | Retry only if action is safe and idempotent; otherwise resume from last sealed boundary or reroute. |
+| Teaching Skill returns malformed or over-scoped output | Schema and policy validation. | Reject or quarantine the proposal; preserve validation findings. | Raw learner artifact may remain an observation; no Evidence Record. | Return for correction with bounded retries; disable package on repeated violations. |
+| Skill attempts direct state access | Capability or authorization denial; audit alert. | Deny, terminate invocation, quarantine package. | No mutation. Existing observations are reviewed for integrity. | No automatic retry. Security incident path. |
+| Observation append succeeds but response is lost | Idempotency lookup by source/id and request hash. | Return original append receipt. | Exactly one logical observation. | Safe retry with same key. |
+| Same idempotency key, different payload | Request-hash mismatch. | Reject and alert. | No second event. | Caller must issue a new intent/key after resolving ambiguity. |
+| Evaluator timeout or provider outage | Deadline/provider health. | Preserve observations and mark evaluation pending or unavailable. Continue only non-evidentiary teaching that does not depend on the result. | No claim mutation from absence of evaluation. | Capped retries with jitter at one layer; fallback evaluator only if policy-qualified and recorded. |
+| Evaluator malformed output | Schema, citations, claim ceiling, and rubric checks. | Reject or quarantine. | No Evidence Record. | Retry once if transient formatting is plausible; otherwise alternate evaluator or human review. |
+| Evaluator abstains | Explicit status. | Treat as a valid epistemic outcome. Request fresh task, narrower claim, another evaluator, or human review. | Claim remains unresolved. | Policy-driven escalation, not blind repeated judging. |
+| Evaluators disagree | Criterion-level comparison and confidence thresholds. | Preserve all proposals; do not average incompatible rationales silently. | Narrow, unresolved, or escalated. | Deterministic tie-break only where justified; otherwise fresh evidence or human review. |
+| Evaluator is compromised or leaks hidden materials | Access anomaly, policy violation, secret canary, incident report. | Revoke credentials/package; quarantine affected proposals; identify accessed artifacts. | Recompute or dispute affected claims. | Incident response and independent re-evaluation. |
+| Policy engine unavailable | Health check/timeout. | Fail closed for canonical writes. Keep observations and learner-facing non-evidentiary continuity where safe. | No claim mutation. | Retry policy decision locally if a signed cached policy is valid; otherwise queue and escalate. |
+| Event journal unavailable | Append failure. | Do not proceed as if observations were preserved. Inform learner of degraded state before eliciting consequential work when possible. | No claim mutation; avoid unrecoverable assessment. | Bounded retry; pause evidentiary flow. |
+| Command partially applied | Transaction failure or reconciliation invariant. | Atomic append plus idempotency record must prevent partial success. | Either one accepted event or none. | Reconcile by command ID; never issue a new semantic command blindly. |
+| Stale target, map, rubric, or stream version | Optimistic concurrency/version check. | Reject commit and rebuild context. Preserve proposal as evaluated against old versions. | No silent application to new target/state. | Re-evaluate only if changed semantics require it. |
+| Projection lag or projector failure | Stream offset and checksum monitoring. | Continue appends if safe; mark read model stale; rebuild from journal. | Canonical history remains authoritative. | Idempotent projector retry; new reducer version for incompatible changes. |
+| Retry storm or dependency overload | Retry counters, queue depth, provider health, token bucket. | Shed or delay noncritical work; isolate evaluator pools from learner interaction pools. | Pending evaluation, not negative evidence. | Capped exponential backoff with jitter; one retry owner. |
+| Model/provider version drifts | Provider metadata, calibration monitor, behavior regression. | Suspend or downgrade evaluator qualification when thresholds fail. | New proposals may require review; old events remain attributable to old metadata. | Recalibrate before promotion. |
+| Human review misses SLA | Queue age and escalation policy. | Preserve pending state and disclose delay; do not auto-accept. | No claim mutation unless another qualified path succeeds. | Reassign, add reviewer, or narrow intended use. |
+| Learner disputes an accepted Evidence Record | Learner action and dispute API. | Append dispute, freeze or flag affected use, preserve original and rationale, recompute projections. | Current claim may become disputed or excluded. | Human or independent re-evaluation under declared policy. |
+| Learner deletes source artifacts | Deletion workflow and dependency graph. | Remove recoverable content, append allowed non-reconstructive tombstone, invalidate or recompute dependent claims. | Claims lose support if required evidence is deleted. | No retry that restores deleted content. |
 
-## MVP architecture
+## Calibration and human review
 
-Start with a modular monolith:
+A model Evaluator should not be promoted based only on aggregate accuracy. Its `CalibrationReport` should include:
 
-- typed `TeachingSkill`, `Evaluator`, and `EvidenceGate` interfaces;
-- separate Model invocations and prompt contexts;
-- evaluator and rubric frozen before an evidence-eligible Attempt;
-- deterministic checks before Model judgment;
-- an append-only evidence audit stream plus ordinary relational projections;
-- content-addressed artifacts and idempotency keys;
-- one end-to-end trace ID;
-- golden evaluation fixtures and replay tests;
-- no direct canonical-state capability in Skills or Evaluators.
+- evaluator, model, prompt, rubric, task-bank, and policy versions;
+- blinded human labels and reviewer qualification;
+- sample sizes and prevalence by Learning Target class;
+- agreement, false-positive and false-negative rates, abstention rate, and claim-scope errors;
+- slices for modality, language, accessibility conditions, assistance tier, task novelty, and stakes;
+- position/order swaps and verbosity/adversarial tests for model judges;
+- inter-human disagreement and adjudication procedure;
+- latency, token usage, cost, timeout, and retry distributions;
+- approved uses, prohibited uses, thresholds, expiry, and rollback trigger.
 
-Do not start with separate evaluator microservices unless deployment or security constraints already require them. A network boundary introduces partial failure, retries, authentication, schema evolution, observability, and consistency costs. Logical isolation captures most immediate epistemic value while keeping the causal loop inspectable.
+Calibration should run:
 
-## Evolution triggers
+- before an evaluator or changed rubric/model/prompt enters production;
+- continuously on randomized production samples where consent and privacy permit;
+- after material distribution shift, incident, provider change, or drift signal;
+- separately for narrow Learning Target Evidence Records and broader Capability interpretations.
 
-Move evaluation to a separate worker, Model, service, panel, or human review when one or more are observed:
+Human review packets should be least-data, rubric-bound, and explicit about assistance and modality. Reviewers should not see irrelevant demographic or model identity data. High-consequence review may require randomized/blinded presentation, dual review, or adjudication. Human overrides must append rationale and never erase the model proposal or original observation.
 
-- evaluator latency or compute scales independently from tutoring;
-- untrusted third-party Teaching Skills or Evaluators are installed;
-- cross-tenant data isolation requires a stronger security boundary;
-- correlated tutor-evaluator bias appears in calibration data;
-- evaluator failures threaten the learner interaction runtime;
-- claims affect credentials, admissions, employment, safety, money, or regulated decisions;
-- disputes or audits require organizational independence;
-- adversarial learners or content create evaluator-gaming pressure;
-- domain experts are required to establish validity;
-- multiple modalities need specialized evaluation infrastructure.
+## Latency and cost tradeoffs
+
+The architecture should spend evaluator independence where it changes the validity or consequence of the result.
+
+1. Run deterministic validation and scoring first. It is usually faster, cheaper, and more reproducible than model judging.
+2. Use embedded assessment for immediate formative adaptation, with no canonical learner-claim effect.
+3. Batch or asynchronously evaluate low-urgency Evidence Record proposals when immediate feedback does not depend on the result.
+4. Use a fresh model call only for rubric dimensions that deterministic checks cannot settle.
+5. Route only abstentions, disagreements, high-consequence claims, calibration samples, and disputes to humans.
+6. Maintain separate latency budgets for learner interaction and evidence finalization. The learner should not wait on a human queue to receive ordinary instructional continuation when policy permits separation.
+7. Cache immutable artifacts and context projections by digest, but never cache an evaluation across changed observations, rubric, assistance history, disclosure profile, or model version.
+8. Track cost per accepted Evidence Record and per corrected false claim, not only cost per evaluator call.
+
+A more isolated evaluator can reduce correlated failure while increasing queueing and provider failure. A cheaper model can reduce per-call cost while increasing abstention, disagreement, or human-review cost. These are empirical tradeoffs and should be selected through calibration rather than architectural intuition alone.
+
+## Evolutionary architecture
+
+### Phase 0: contract prototype
+
+- Keep all components in one repository and process.
+- Define types, fixtures, state machines, and policy decisions before adding queues or services.
+- Use trusted built-in Teaching Skills and deterministic evaluators only.
+- Record observation/evaluation/commit boundaries in tests, even if persistence is initially simple.
+- Prove that a Skill cannot call the canonical repository interface directly.
+
+Exit criterion: proposal-command separation, idempotency, version checks, and replay fixtures are executable.
+
+### Phase 1: MVP modular monolith
+
+- One deployable application with modules for Harness, Skill Runtime, Evaluation Broker, Policy Decision Point, Journal, Command Gateway, and Projectors.
+- One transactional database may hold append-only journal tables, artifact references, idempotency records, and read-model tables.
+- Use a transactional outbox only if external asynchronous work is introduced.
+- Model-based evidence evaluation uses a fresh sealed invocation, even if broker and worker are in the same process.
+- Human review is an internal queue for disputes, low confidence, and high-consequence cases.
+- Third-party packages are not accepted. Manifests and digests are still recorded for future portability.
+
+Exit criterion: production traces can reconstruct every learner-claim change and demonstrate no duplicate commits under injected timeouts.
+
+### Phase 2: isolated workers and calibrated evaluators
+
+- Move Teaching Skill and Evaluator invocations to separate worker pools with independent time, token, memory, and concurrency quotas.
+- Add durable queues, inbox/outbox deduplication, capped retries, dead-letter/quarantine flows, and bulkhead pools by provider or tenant risk.
+- Introduce evaluator qualification and versioned calibration reports.
+- Add blinded holdout suites, adversarial judge tests, drift monitoring, and sampled human calibration.
+- Keep the Command Gateway and policy enforcement close to the canonical store.
+
+Exit criterion: worker loss, provider outage, duplicate delivery, and evaluator disagreement do not corrupt or silently mutate learner evidence.
+
+### Phase 3: governed plugin ecosystem
+
+- Admit signed/digested third-party packages through an explicit review and capability declaration process.
+- Run untrusted packages in a deny-by-default WASI or equivalently strong sandbox.
+- Broker all Tool, model, network, filesystem, secret, and state access.
+- Maintain publisher trust, revocation, vulnerability response, compatibility, and package provenance.
+- Separate hidden evaluation materials from Skill-accessible storage.
+
+Exit criterion: a malicious test plugin cannot read canonical stores, other learners' data, host credentials, hidden answers, or undeclared network resources.
+
+### Phase 4: production service and independent review boundaries
+
+- Split an Evaluator service only when independent deployment, external assessors, regional/privacy boundaries, scaling, or failure containment justify it.
+- Use separate credentials, network policy, operator roles, audit streams, and resource pools.
+- Support specialist human-review vendors or internal panels through least-data review packets and contractual controls.
+- Add cryptographic attestations where cross-organization verification requires them.
+- Preserve a local fail-closed policy and observation path so evaluator-service failure does not corrupt evidence or stop all instruction.
+
+Exit criterion: consequential evidence pathways survive component/provider failures, independent audit can reconstruct decisions, and privacy/deletion obligations remain enforceable across services.
+
+## Acceptance tests
+
+These tests describe the proposed architecture's observable boundary.
+
+1. **No direct Skill write**: a test Skill attempts to call canonical learner-state storage and is denied; no learner stream event is appended.
+2. **Self-assessment is not evidence**: a Skill returns `InstructionalAssessment.supported`; the current learner claim remains unchanged without an accepted `EvaluationProposal` and commit event.
+3. **Fresh evaluator context**: inspect the evaluator request and verify it contains required learner observations and assistance history but excludes the Skill's proposed score and private rationale.
+4. **Hidden material isolation**: a Skill requests a reference answer or held-out verification item without a declared capability and is denied and audited.
+5. **Observation before evaluation**: kill the evaluator after learner submission; the sealed learner artifact remains recoverable as an observation while no Evidence Record exists.
+6. **Evaluator abstention**: return `abstained`; the Harness requests a fresh task or review and does not convert abstention into failure evidence.
+7. **Claim ceiling**: an evaluator proposes a Capability claim beyond the request's allowed scope; policy narrows or rejects it and records the reason.
+8. **Assistance accounting**: omit a decisive reveal from a proposal; commit policy rejects the Evidence Record.
+9. **Duplicate append**: deliver one observation twice with identical source/id and payload; exactly one logical observation and one receipt result.
+10. **Idempotency mismatch**: reuse a commit key with different evidence content; the command is rejected and no second accepted event appears.
+11. **Lost commit response**: commit succeeds but the response is dropped; retry returns the original receipt and creates no duplicate Evidence Record.
+12. **Stale stream**: commit against an old learner stream version after a correction event; commit fails with a conflict and requires context reconstruction.
+13. **Deterministic replay**: rebuild projections twice from the same stream and reducer version; canonical serialized projections have identical hashes.
+14. **Model call not replayed**: rebuild projections with provider network disabled; reconstruction succeeds from recorded evaluator outputs.
+15. **New evaluation is additive**: re-evaluate an old Attempt with a new evaluator version; the old proposal remains, the new proposal is appended, and operative state changes only through a new command.
+16. **Evaluator disagreement**: two qualified evaluators return incompatible criterion results; no silent average is committed and escalation policy runs.
+17. **Policy outage**: stop the policy component; observations can be preserved, but canonical evidence writes fail closed.
+18. **Worker bulkhead**: exhaust one evaluator provider's pool; learner interaction and other evaluator pools continue within their budgets.
+19. **Retry budget**: inject persistent evaluator failure; retries occur at one layer with a cap and jitter, then quarantine or escalation occurs.
+20. **Package compromise**: a sandboxed plugin attempts filesystem, environment, and undeclared network access; all are denied.
+21. **Calibration expiry**: mark an evaluator calibration expired; policy prevents it from handling T2/T3 claims while allowing only explicitly approved lower-tier use.
+22. **Judge bias probe**: swap response order and add irrelevant verbosity in calibration cases; record sensitivity and fail promotion if policy thresholds are exceeded.
+23. **Human override audit**: a reviewer overturns a model proposal; both decisions, identities/roles, rubric, rationale, and operative command remain inspectable.
+24. **Learner dispute**: dispute an accepted Evidence Record; the original remains visible, the current projection marks it disputed/excluded according to policy, and dependent claims recompute.
+25. **Deletion**: delete a learner artifact; active and recoverable payload checks fail, caches/projections purge, dependent claims recompute, and only permitted non-reconstructive deletion metadata remains.
+26. **Model swap invariant**: change the learner-facing or evaluator model without a command; canonical stream and current learner-state fingerprint remain unchanged.
+27. **Cross-tenant isolation**: use a valid observation reference from another learner in an Evaluation Request; context and commit policy reject it.
+28. **Audit completeness**: for any current learner claim, traverse to accepted command, policy decision, evaluator proposal, rubric, observation, learner artifact, assistance/reveal events, task, target, and component versions.
 
 ## Karpathy perspective
 
@@ -308,42 +696,76 @@ If this reference loop is not trustworthy, a service boundary will only distribu
 
 Karpathy's fixed scalar evaluator in `autoresearch` is much cleaner than evaluating human learning. Learner work is often open-ended, context-dependent, multimodal, and construct-sensitive. A fixed score can be gamed or can measure the wrong thing. The analogy supports separation, observability, and fixed comparisons. It does not prove that automated evaluation is valid for every Learning Target.
 
-## Product hypotheses requiring validation
+## Recommendations pending founder approval
 
-- Separate Model invocations will reduce tutor-goal leakage enough to improve scoring reliability.
-- A narrow `EvaluationContext` will improve auditability without removing construct-relevant context.
-- Same-Model evaluation will be adequate for many low-stakes formative and narrow evidence claims.
-- Human-calibrated disagreement thresholds can identify when independent review is worth its cost.
-- Scoped event sourcing will provide sufficient reconstruction without imposing excessive implementation complexity.
+1. Approve the **three-role logical boundary**: Skill proposes instruction, Evaluator proposes interpretation, Harness alone commands durable state.
+2. Rename or type a Teaching Skill's internal score as `InstructionalAssessment`, distinct from an evidence-eligible `EvaluationProposal`.
+3. Require a **fresh sealed evaluator invocation** for model-based evaluations that may mutate learner claims. Same-process deployment remains acceptable for the MVP.
+4. Make evaluator deployment **consequence-tiered**, not universally service-separated.
+5. Keep hard policy deterministic and Harness-owned. An evaluator cannot authorize its own proposal.
+6. Adopt a **scoped append-only evidence journal plus CQRS projections**, not full-system event sourcing.
+7. Define deterministic replay as reconstruction from recorded nondeterministic results, not regenerated model equivalence.
+8. Require idempotency keys and request hashes for every append and commit path.
+9. Delay arbitrary third-party Teaching Skills and Evaluators until capability sandboxing, package provenance, revocation, and incident response exist.
+10. Require calibration against human labels and deterministic outcomes before a model Evaluator is qualified for a tier.
 
-## Acceptance tests
+## Product hypotheses to test
 
-1. **Predeclared evaluator:** an evidence-eligible task cannot be issued without evaluator, rubric, target, task, and interpretation-rule versions.
-2. **Rubric freeze:** changing criteria after task issuance creates a new task or invalidates evidence eligibility.
-3. **Narrow context:** the evaluator cannot access hidden tutor reasoning, Persona instructions, or desired learner-state mutation.
-4. **No direct writes:** Teaching Skills and Evaluators possess no canonical durable-write capability.
-5. **Proposal gate:** an EvaluationProposal cannot update learner state until the Harness returns an accepting GateDecision.
-6. **Agent-work exclusion:** Agent Actions are excluded from learner credit even when embedded in the same artifact.
-7. **Assistance conditioning:** identical learner answers under different assistance histories may yield different maximum claim scopes.
-8. **Idempotent retry:** evaluator timeout and retry produce at most one accepted evaluation event for the invocation ID.
-9. **Historical replay:** exact versions and recorded inputs reconstruct the original orchestration and deterministic checks.
-10. **Explicit re-evaluation:** applying a new evaluator version to old work appends a new interpretation without overwriting history.
-11. **Deterministic-first:** executable or rule-based checks run before open-ended Model judgment when applicable.
-12. **Disagreement:** material grader disagreement is preserved and triggers narrowing or escalation.
-13. **Persona isolation:** changing Persona style alone cannot change rubric criteria or permissible claim scope.
-14. **Trace continuity:** plan, task, attempt, assistance, evaluation, gate, and evidence append share one trace identity.
-15. **Gate outage:** evidence remains pending and no component bypasses the gate.
-16. **Projection recovery:** derived learner state can be rebuilt from accepted evidence events.
-17. **Risk escalation:** a high-stakes or poorly calibrated claim requires the declared stronger evaluator or human-review tier.
-18. **MVP topology:** all tests pass in one process before any separate service is introduced.
+These are not established facts or current commitments:
 
-## Caveats and what was not checked
+1. A fresh invocation of the same strong model, blinded to the Skill's conclusion, may provide enough incremental independence for T1 low-stakes Evidence Records when paired with deterministic policy and human sampling.
+2. Using a different calibrated model only for disputed criteria may capture most independence benefit without doubling every interaction's cost.
+3. A consequence-tier router may reduce average evaluation cost and latency while keeping false positive learner claims below an acceptable threshold.
+4. Separating learner-facing feedback latency from evidence-finalization latency may preserve instructional flow without pressuring the system to accept weak evaluations.
+5. A compact observation journal in the MVP may provide adequate replay and auditability without adopting a specialized event-store product.
+6. WASI may be a practical future sandbox for portable Teaching Skill and Evaluator plugins, but runtime compatibility, language SDK ergonomics, debugging, and side-channel risks require a prototype.
+7. Criterion-level evaluator abstention and claim narrowing may be more useful than forcing a single scalar score.
+8. Blinded human review of a stratified sample may detect judge drift earlier than aggregate product metrics.
+9. Outcome-first grading may reduce model-judge rhetoric bias for artifact-producing tasks, while explanation and conceptual targets will still require carefully calibrated rubric judgment.
 
-- This is an architecture synthesis, not an empirical comparison of tutor-evaluator deployment patterns.
-- OpenAI's current Evals and grader products have published deprecation timelines. Their design guidance remains useful, but Socratink must not bind its contract to those product APIs.
-- NIST AI RMF is voluntary risk-management guidance, not a software architecture specification.
-- Event sourcing, CQRS, OPA, Temporal, WebAssembly components, and OpenTelemetry are design analogies. Socratink need not adopt those technologies to preserve the stated invariants.
-- No commercial AI tutor's internal evaluator architecture was inspected.
-- No threat model for malicious third-party skill packages was completed here.
-- Exact human-review thresholds, evaluator calibration metrics, and domain-specific validity studies remain future work.
-- Voice, gesture, diagram, code, and collaborative artifacts may require specialized evaluators beyond this generic interface.
+## Caveats
+
+- Architecture patterns do not establish psychometric validity. The assessment triangle, Evidence Contract, construct definition, task sampling, and intended use still determine what an Evidence Record can support.
+- Separate services can reproduce the same invalid rubric at greater cost. Isolation improves containment and independence dimensions, not truth by itself.
+- Model-as-judge evidence is domain- and rubric-dependent. MT-Bench's human agreement does not transfer automatically to adult learning evidence, multimodal responses, accessibility accommodations, or Capability claims.
+- Human labels are not pure ground truth. Reviewer expertise, disagreement, fatigue, cultural assumptions, and rubric ambiguity must be measured.
+- Event sourcing complicates deletion, schema evolution, and operations. The recommendation intentionally limits it to the evidence mutation boundary.
+- Cryptographic hashes prove byte identity, not semantic validity or lawful provenance.
+- A sandbox narrows authority but does not eliminate denial-of-service, side channels, runtime vulnerabilities, malicious outputs, or supply-chain risk.
+- “Different model” may still mean shared training data, architecture, provider infrastructure, or benchmark exposure.
+- Exact cost and latency depend on model, modality, artifact size, task length, queueing, region, and review labor. No numeric SLO is justified by this desk research.
+
+## Not checked
+
+- The eventual implementation language, database, queue, workflow engine, cloud, tenancy model, or model providers.
+- Current provider contracts for data retention, regional processing, model pinning, log access, and deletion.
+- FERPA, COPPA, GDPR, UK GDPR, EU AI Act, accessibility-law, employment, credentialing, medical, or other jurisdiction-specific obligations.
+- A formal Socratink threat model, privacy impact assessment, data-classification policy, or security penetration test.
+- Whether WASI meets all required modality, GPU, native-library, debugging, and performance needs for Socratink plugins.
+- Cryptographic signing, key management, attestation transparency logs, publisher identity, and revocation design.
+- Empirical latency, token, and dollar benchmarks across evaluator options.
+- Psychometric calibration studies on Socratink learners, tasks, languages, modalities, disabilities, and assistance conditions.
+- Human reviewer recruitment, qualification, labor conditions, inter-rater reliability, and SLA design.
+- Backup-level proof of permanent deletion and the legal status of retained tombstones or hashes.
+- Whether issue #8 will classify any Socratink use as T2/T3 at launch. That is a product and governance decision.
+
+## Primary sources
+
+[^nist-zta]: NIST, [SP 800-207: Zero Trust Architecture](https://doi.org/10.6028/NIST.SP.800-207), 2020. Defines logical policy engine, policy administrator, and policy enforcement point roles; notes logical roles need not map one-to-one to systems.
+[^opa]: Open Policy Agent, [Philosophy](https://www.openpolicyagent.org/docs/latest/philosophy/). Describes decoupling policy decisions and deployment as library, sidecar, or daemon.
+[^bulkhead]: Microsoft Azure Architecture Center, [Bulkhead pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/bulkhead). First-party architecture guidance on isolating resource pools to contain cascading failures.
+[^wasi-security]: WASI, [Security](https://wasi.dev/security). Official deny-by-default capability model with no ambient authority and host-granted access.
+[^component-model]: Bytecode Alliance, [Why the Component Model?](https://component-model.bytecodealliance.org/design/why-component-model.html). Official typed interface and separately compiled component design.
+[^event-sourcing]: Microsoft Azure Architecture Center, [Event Sourcing pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/event-sourcing). Append-only streams, replay, auditability, projections, event versioning, idempotent consumers, and complexity caveats.
+[^cqrs]: Microsoft Azure Architecture Center, [CQRS pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs). Separates commands from queries and discusses independent models and security tradeoffs.
+[^cloudevents]: Cloud Native Computing Foundation, [CloudEvents Specification v1.0.2](https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md). Defines event occurrence/context and required `id`, `source`, `specversion`, and `type` semantics, including duplicate identity.
+[^temporal]: Temporal, [Workflow Definition: determinism, replay, and versioning](https://docs.temporal.io/workflow-definition). Requires deterministic replay and places LLM/API/database calls outside replay as recorded Activities.
+[^w3c-prov]: W3C, [PROV Overview](https://www.w3.org/TR/prov-overview/) and linked Recommendations. Defines interoperable provenance for entities, activities, and agents.
+[^slsa]: SLSA, [Provenance v1.0](https://slsa.dev/spec/v1.0/provenance). Defines provenance for produced artifacts, build process, external parameters, and resolved dependencies.
+[^in-toto]: in-toto, [Attestation specification v1](https://github.com/in-toto/attestation/blob/main/spec/v1/README.md). Defines subject-bound attestations, major-version type identity, extension parsing, and monotonic policy guidance.
+[^aws-idempotency]: Malcolm Featonby, AWS Builders' Library, [Making retries safe with idempotent APIs](https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/), 2020. Caller request IDs, atomic token/mutation recording, semantic equivalence, late requests, and parameter mismatch.
+[^aws-retries]: Marc Brooker, AWS Builders' Library, [Timeouts, retries, and backoff with jitter](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/), 2019. First-party guidance on retry amplification, single-layer retries, idempotency, capped backoff, token buckets, and jitter.
+[^openai-evals]: OpenAI, [Evaluation best practices](https://platform.openai.com/docs/guides/evaluation-best-practices). Held-out sets, continuous evaluation, human calibration, model-judge position/verbosity bias, and cost/latency validation.
+[^anthropic-evals]: Anthropic, [Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents), 2026. Defines trials, transcripts, outcomes, graders, and evaluation harnesses; recommends multiple trials and combined deterministic, model, and human grading with calibration.
+[^mtbench]: Lianmin Zheng et al., [Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena](https://arxiv.org/abs/2306.05685), 2023/2024. Primary study of human agreement and position, verbosity, self-enhancement, and reasoning limitations.
+[^nist-ai-600-1]: NIST, [AI 600-1: Artificial Intelligence Risk Management Framework, Generative Artificial Intelligence Profile](https://doi.org/10.6028/NIST.AI.600-1), 2024. Recommends risk-proportional independent evaluation, human-oversight inventories, third-party risk controls, provenance, monitoring, and contingency planning.
