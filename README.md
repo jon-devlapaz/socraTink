@@ -1,88 +1,64 @@
-# socratink
+# Socratink
 
-Most learning tools reward recognition — re-reading, highlighting, watching again. You feel like you're learning, but you're not. socratink breaks the Illusion of Competence by forcing you to reconstruct causal mechanisms from memory before the system says you understand.
+Socratink is being designed as a persistent Learner Agent OS that can grow with a learner across subjects, goals, models, skills, and personas while preserving learner ownership and honest evidence of capability.
 
-**The graph tells the truth.** socratink automatically extracts a structural knowledge map from source material (transcripts, PDFs, lectures) and turns it into a spatial record of verified understanding — not a progress bar.
+> Your agent grows with you, remembers what you have actually demonstrated, and finds a better way to help you learn across subjects without doing the learning for you.
 
-Built for learners who want proof they know something, not just proof they saw it.
+## Product direction
 
-## The Pipeline
+The durable product entity is one learner-owned Learner Agent, not a chatbot session or a particular Model account.
 
-```
-Raw Text → [Extract] → [Present] → [Drill] → [Consolidate]
-              Stage 1      Stage 2     Stage 3     Stage 4
-```
+The Learner Agent is designed to:
 
-**Stage 1 — Extract** (`learnops-extract`): Recovers the causal architecture beneath a text. Produces a structured knowledge map with mechanism-level claims, not topic labels. Prevents the "Bird-Naming Fallacy" — knowing what something is called without understanding how it works.
+- build provenance-aware knowledge structure from learner-authorized Sources;
+- create goal-scoped Learning Maps around demonstrable Learning Targets;
+- preserve a separate Learner Evidence Model grounded in learner Attempts and explicit assistance conditions;
+- invoke governed Teaching Skills that protect target-relevant learner thinking;
+- use learner-chosen Persona Packages as bounded expressive and pedagogical costumes;
+- support motivation, curiosity, creation, and appropriate human connection without manipulation or dependency;
+- preserve continuity across Model, Tool, Skill, Persona, project, and deployment changes.
 
-**Stage 2 — Present** (`learnops-present`): Renders a knowledge map as a navigable single-file HTML dashboard. Enforces Mayer's Segmenting Principle (single-section visibility) to build a spatial mental model before drilling. This is the last passive exposure before active recall.
+The product does not treat conversation, content exposure, Agent output, task completion, engagement, or apparent confidence as proof of learner capability.
 
-**Stage 3 — Drill** (`learnops-drill`): Socratic stress-testing of the learner's understanding, node by node. Forces attempted recall before any correction (the Generation Effect). Classifies failures as Shallow, Deep, or Misconception and applies matched remediation. Produces a structured handoff payload for Stage 4.
+## Smallest complete proof
 
-**Stage 4 — Consolidate** *(not yet built)*: Sleep-gated verification. After ≥24 hours, tests whether repairs from Stage 3 survived consolidation. The spacing law is a biological constraint — knowledge repaired in Stage 3 is still too accessible for a valid retention test.
+The first proof serves an adult learner facing a real technical or academic performance demand.
 
-## Why This Architecture
+The learner provides a goal and a Source. The Learner Agent builds a provisional Learning Map, wears a chosen Persona costume, invokes a reconstruction Teaching Skill, preserves spoken or written learner work, identifies one consequential gap, and recommends a later action from evidence. The learner returns after elapsed time and attempts meaningful work again. Learner continuity survives a Model boundary.
 
-Each stage exists because of a specific neurocognitive requirement:
+This is a strategic validation slice, not the whole product and not a claim that one instructional procedure is universally best.
 
-- **Extraction before presentation**: The brain stores causal networks, not topic lists. Forcing mechanism-level syntax at extraction ensures the map is drillable downstream.
-- **Presentation before drilling**: Cognitive load must be managed. The dashboard provides a segmented, navigable surface — not an information dump — so the learner builds spatial familiarity before high-friction recall.
-- **Drilling before consolidation**: The hippocampus requires a prediction error signal (attempted recall → failure → correction) to encode effectively. Passive re-reading doesn't generate this signal.
-- **24-hour spacing before verification**: Synaptic consolidation requires sleep. Testing immediately after repair measures accessibility, not durability.
+## Canonical documentation
 
-## Installation
+Read these in authority order:
 
-Each skill is a self-contained directory following the [Agent Skills specification](https://agentskills.io/specification). Install individually or as a set.
+1. [`ZEN.md`](ZEN.md) defines the maintainability contract for contributors.
+2. [`docs/product/north-star.md`](docs/product/north-star.md) is the accepted product doctrine.
+3. [`CONTEXT.md`](CONTEXT.md) defines canonical domain language and relationships.
+4. Product contracts under [`docs/product/`](docs/product/) make specific doctrine boundaries operational.
+5. Research notes under [`docs/research/`](docs/research/) preserve evidence, methods, findings, and limitations.
+6. The [Wayfinder map](https://github.com/jon-devlapaz/socraTink/issues/1) records resolved decisions and the remaining path to an executable roadmap.
 
-### Claude.ai (Custom Skills)
+`README.md` is a derived orientation surface. If it conflicts with the north star, canonical language, or a product contract, the canonical artifact wins and the README must be corrected.
 
-Zip and upload individual skill directories via **Settings → Features → Custom Skills**.
+## Epistemic posture
 
-### Claude Code
+Socratink distinguishes:
 
-```bash
-cp -r skills/learnops-extract .claude/skills/
-cp -r skills/learnops-present .claude/skills/
-cp -r skills/learnops-drill .claude/skills/
-```
+- founder commitments, which are normative product choices;
+- evidence-grounded principles, which remain scoped and revisable;
+- product hypotheses, which require disconfirming tests and stop gates;
+- strategic first-proof constraints, which define the current validation slice;
+- observations and implementation choices, which do not become doctrine by themselves.
 
-### Any Agent Skills-compatible platform
+The repository rejects unsupported neuroscience, fixed learning-style labels, manufactured mastery, hidden affect inference, and universal pedagogical rules. Negative results, non-returners, accessibility failures, correction cost, and subgroup harms remain part of product evaluation.
 
-The skills use the open Agent Skills format (SKILL.md + references/). Consult your platform's documentation for the skill installation path.
+## Repository status
 
-## Tools
+This repository currently contains accepted product doctrine, domain language, product contracts, research notes, and legacy donor skills. It is planning the smallest complete proof of the Learner Agent OS. It is not yet a production implementation.
 
-`tools/get_transcript.py` — A CLI utility that fetches YouTube transcripts and saves them as text files. This is the input funnel for Stage 1.
-
-```bash
-pip install youtube-transcript-api yt-dlp pyperclip rich
-python tools/get_transcript.py "https://youtube.com/watch?v=..."
-```
-
-## Repo Structure
-
-```
-socratink/
-├── skills/
-│   ├── learnops-extract/       # Stage 1: Knowledge extraction
-│   │   ├── SKILL.md
-│   │   └── references/
-│   ├── learnops-present/       # Stage 2: Dashboard presentation
-│   │   ├── SKILL.md
-│   │   └── references/
-│   └── learnops-drill/         # Stage 3: Socratic gap detection
-│       ├── SKILL.md
-│       └── references/
-├── tools/
-│   └── get_transcript.py       # YouTube transcript fetcher
-├── LICENSE                     # Apache-2.0
-└── README.md
-```
-
-## Status
-
-Active build. Stages 1–3 are functional and tested against live content. Stage 4 (consolidation verification) is designed but not yet implemented. The current focus is stabilizing the epistemic traversal loop — the state machine governing how nodes transition from locked to drilled to solid.
+The existing `learnops-*` skills are donor artifacts from an earlier Socratink pipeline. They preserve useful interaction and content-processing experiments, but their fixed stages, terminology, prompts, and architecture are not the future product contract and must not override the accepted doctrine.
 
 ## License
 
-Apache-2.0. See [LICENSE](LICENSE).
+Apache-2.0. See [`LICENSE`](LICENSE).

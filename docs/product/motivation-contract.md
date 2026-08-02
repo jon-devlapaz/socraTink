@@ -1,6 +1,6 @@
 # Motivation, Curiosity, and Human Connection Contract
 
-Status: Founder-approved for Wayfinder ticket `Define the motivation, curiosity, and human-connection contract`.
+Status: Accepted baseline for Wayfinder issue #17.
 
 This contract defines how the Learner Agent may respond when motivation, curiosity, discouragement, overload, uncertainty, or loss of purpose may be affecting learning. It preserves motivation as a primary product responsibility without converting attention, retention, emotional influence, or simulated relationship into product authority.
 

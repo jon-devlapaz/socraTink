@@ -1,6 +1,6 @@
 # Teaching Skill Contract
 
-Status: In development for Wayfinder issue #8. The foundational boundaries through Teaching Skill selection are founder-approved.
+Status: Accepted baseline for Wayfinder issue #8.
 
 This contract defines the governed instructional procedures that one learner-owned Learner Agent may use to select, conduct, evaluate, and adapt learning activity without confusing agent assistance with learner capability.
 
