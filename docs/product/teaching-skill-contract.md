@@ -1,6 +1,6 @@
 # Teaching Skill Contract
 
-Status: In development for Wayfinder issue #8. The foundational epistemic-labor boundary is founder-approved.
+Status: In development for Wayfinder issue #8. The foundational boundaries through Teaching Skill selection are founder-approved.
 
 This contract defines the governed instructional procedures that one learner-owned Learner Agent may use to select, conduct, evaluate, and adapt learning activity without confusing agent assistance with learner capability.
 
@@ -99,6 +99,58 @@ A mode change is an explicit, append-preserved event. If a learner asks the agen
 When AI output is used inside learning or hybrid mode, the Teaching Skill should require construct-relevant critical engagement where appropriate. This may include prediction before output, questioning assumptions, locating evidence, editing or annotating the output, testing it against observable consequences, comparing alternatives, explaining discrepancies, or revising a learner-authored artifact. These actions are instructional procedures, not automatic proof of understanding.
 
 The Teaching Skill must preserve a route to fresh performance under reduced or declared assistance whenever it claims movement toward independence. The appropriate delay, novelty, modality, Tools, and assistance conditions remain governed by the Evidence Contract and `AssistanceAndSolutionRevelationPolicy`.
+
+## Teaching Skill selection authority
+
+Teaching Skill selection is a governed decision by the Agent Harness, not an unconstrained Model choice, Persona preference, engagement optimization, or fixed learner-type assignment. Selection proceeds in three ordered stages: deterministic eligibility, evidence-informed ranking, and learner choice among eligible procedures.
+
+### Deterministic eligibility
+
+The Harness must first exclude every Teaching Skill version that cannot validly execute for the current `TeachingContext`. Eligibility must check at minimum:
+
+- active Learning Target, Evidence Contract, Learning Goal, and Map Revision compatibility;
+- declared interaction mode and the learner-reserved epistemic work required by that mode;
+- prerequisite and readiness floors, including whether the learner has enough representation for the proposed attempt;
+- assistance, reveal, evaluator, consequence-tier, modality, accessibility, Tool, environment, permission, consent, time, and safety requirements;
+- exact Teaching Skill version, dependency closure, validation status, lifecycle status, and Agent Harness compatibility;
+- whether the procedure can preserve the required learner artifact, provenance, evaluation boundary, fresh-verification path, and stop controls.
+
+An ineligible skill cannot be restored by predicted motivation, engagement, completion speed, Persona affinity, Model confidence, learner preference, or prior popularity. If no skill is eligible, the Harness must clarify missing context, diagnose prerequisites, propose a non-evidentiary exploratory action, recommend an appropriate human or external resource, or stop. It must not silently weaken the target or Evidence Contract to force a selection.
+
+### Evidence-informed ranking
+
+The Harness may rank only the eligible set. Ranking should estimate expected learning value for the declared purpose while preserving uncertainty and avoiding invented stable learner traits. Relevant inputs may include:
+
+- target and evidence fit, prerequisite state, readiness, and the learner's demonstrated response to prior tasks, assistance, feedback, and delayed verification;
+- current purpose, stakes, available time, modality and accessibility needs, learner preferences, and explicit constraints;
+- discouragement, overload, confidence calibration, curiosity opportunities, desire to create, and opportunities for meaningful human connection;
+- instructional evidence quality, validation coverage, known exclusions, novelty needs, and uncertainty about expected benefit.
+
+These signals may alter the next procedure, challenge, example, scaffold, modality, Persona expression, or recommendation for a teacher, peer, mentor, or community. They do not become capability evidence merely because they influenced ranking. The system must not infer or preserve fixed learning styles, personality types, motivation types, or broad ability traits from a preferred modality or short interaction history.
+
+Ranking must never optimize engagement, session length, easy completion, emotional attachment, or retention as ends that outweigh learning validity, learner agency, safety, accessibility, truthfulness, or the declared goal. Motivation is a first-class instructional responsibility, but manufactured progress, hidden delegation, dependency, and agent-completed work are invalid means of producing it.
+
+### Learner choice and bounded Persona influence
+
+The Learner Agent should present a comprehensible default and meaningful alternatives when more than one Teaching Skill is eligible. The learner may choose any eligible option, request another eligible option, ask why an option was included or excluded, or decline and stop. The Harness may limit choice only for an explicit policy, safety, permission, evidence-validity, or feasibility reason that it records and can explain.
+
+A Persona may rerank eligible options and shape their presentation, examples, tone, challenge framing, or motivational expression. It cannot add an ineligible option, conceal a valid alternative, alter the target or evidence meaning, weaken learner-reserved work, raise its own relationship or commercial interest above the learner's purpose, or select a procedure solely to deepen attachment to the Persona.
+
+The Model may propose candidates, ranking features, rationales, and uncertainty. The Harness alone validates eligibility, applies policy, resolves the selected immutable version and dependency closure, and authorizes execution.
+
+### Selection record and explanation
+
+For every selection decision, the Harness must append-preserve a versioned `TeachingSkillSelectionRecord` containing at minimum:
+
+- the `TeachingContext`, target, goal, Map Revision, Evidence Contract, interaction mode, and policy versions used;
+- the candidate Teaching Skill versions considered;
+- each candidate's eligibility result and explicit exclusion reasons;
+- the ranking inputs, evidence basis, uncertainty, known missing information, and ordered eligible set;
+- Persona and Model proposals distinguished from Harness decisions;
+- the default presented, alternatives exposed, learner choice or override, and any constrained-choice reason;
+- the selected immutable version and dependency closure, fallback or reroute path, decision time, and actor authority.
+
+The learner-facing explanation must answer: why this procedure now, what valid alternatives exist, why any requested option is unavailable, what learner work it protects, how assistance may change, and how the learner may override, pause, or stop. Ranking scores are decision aids, not scientific measures of the learner, and must not be presented as such.
 
 ## Typed result and durable-write boundary
 
@@ -323,6 +375,14 @@ The system must reject or surface any Teaching Skill that:
 - continues identical retries after its declared error or struggle boundary;
 - treats accessibility accommodation as lower capability when the accommodation is not part of the target construct;
 - permits a Persona, Model, Tool, or learner preference to bypass constitutional evidence boundaries;
+- allows ranking, engagement, Persona affinity, Model confidence, or learner preference to resurrect an ineligible Teaching Skill;
+- selects a skill before checking interaction mode, learner-reserved epistemic work, Evidence Contract compatibility, accessibility, permissions, exact version closure, or required evaluation boundaries;
+- ranks or selects for session length, easy completion, attachment, or retention at the expense of learning validity, learner agency, truthfulness, or safety;
+- assigns a fixed learning style, motivation type, personality type, or broad ability trait from modality preference or short interaction history;
+- prevents the learner from choosing another eligible procedure, requesting an explanation, declining, pausing, or stopping without an explicit recorded governing reason;
+- permits a Persona to introduce an ineligible option, conceal an eligible alternative, alter evidence meaning, or optimize for dependence on the Persona;
+- treats a Model proposal as the authoritative eligibility, policy, version-resolution, or execution decision;
+- executes without an append-preserved `TeachingSkillSelectionRecord` that distinguishes candidates, exclusions, ranking inputs, uncertainty, Persona and Model proposals, Harness authority, learner choice, and fallback;
 - cannot identify what cognitive work the learner and agent each performed;
 - cannot provide a fresh verification path when it claims movement toward independence;
 - captures voice without purpose-bound consent or an obvious recording state, or continues capture after pause, stop, or revocation;
