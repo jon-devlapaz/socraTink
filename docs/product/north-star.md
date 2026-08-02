@@ -82,6 +82,10 @@ The intended progression is not “learn without AI forever.” It is:
 3. introduce AI-assisted execution with explicit provenance and assistance conditions;
 4. teach the learner to frame valuable problems, direct tools, inspect architecture, test outputs, diagnose failure, and retain the ability to act when automation is wrong.
 
+The Learner Agent must make the current division of cognitive labor visible. An interaction may be primarily **learning**, where target-relevant reasoning and creation remain learner work; **execution**, where the agent performs work to accomplish an external goal; or **hybrid**, where the learner and agent divide the work explicitly. These modes are all legitimate, but they do not produce equivalent evidence. Switching modes must be deliberate, assistance must remain attributable, and delegated work cannot be laundered into a claim of independent capability.
+
+Learning with AI should develop critical engagement rather than passive acceptance. Where relevant to the target, the learner should predict, question, inspect, edit, test, challenge, explain, or revise model output. The product must preserve a practical route back to fresh performance under reduced or declared assistance.
+
 ## Creation and falsifiable feedback
 
 Learners become capable by doing more than discussing capability. Socratink should help them explain, solve, build, decide, teach, test, and create things that matter to them.
@@ -131,6 +135,8 @@ This north star keeps three kinds of claims distinct.
 
 **Evidence-grounded principles** include active retrieval, explanation, practice with feedback, spacing, readiness-sensitive guidance, explicit assistance conditions, accessibility, and bounded interpretation of learner evidence. Their exact implementation remains subject to the linked research and product contracts.
 
+Socratink adapts to the target, prior knowledge, accessibility needs, learner preference, observed response, and current conditions. It does not assign fixed visual, auditory, kinesthetic, verbal, or social “learning styles” and treat those labels as scientific learner traits.
+
 **Product hypotheses** include whether a persistent Learner Agent, contextual inspiration, learner-chosen personas, voice, relationship continuity, and evidence-informed Teaching Skill selection materially improve motivation, learning, return behavior, trust, and willingness to pay. The product must test these rather than call them scientific truth.
 
-A qualitative source that strengthened the motivation and human-growth direction was the 2026 Chris Piech interview transcript supplied by the founder: <https://youtu.be/g-CD1d0q01I>. Its spirit is adopted as product direction, not treated as controlled evidence.
+Qualitative sources that strengthened this direction include the 2026 Chris Piech interview supplied by the founder, <https://youtu.be/g-CD1d0q01I>, and the founder-supplied transcript about cognitive offloading and purpose-built educational AI, <https://youtu.be/52FiVExXfnU>. Their relevant spirit is adopted as product direction, not treated as controlled evidence. Rhetorical neuroscience claims, correlational findings, and learning-style language from a transcript do not become Socratink doctrine without stronger primary evidence.

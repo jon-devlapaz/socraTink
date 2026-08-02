@@ -82,6 +82,24 @@ Before execution, the Agent Harness must validate that the context is sufficient
 
 Persona preferences and learner preferences are advisory inputs within this envelope. They may influence presentation, examples, modality, assistance, and selection among valid procedures. They cannot alter the target, invent evidence, widen an evidence claim, or bypass constitutional and policy boundaries.
 
+## Interaction mode and cognitive-labor declaration
+
+Every `TeachingContext` and proposed Learning Task must declare one interaction mode and the exact division of cognitive labor:
+
+| Mode | Primary purpose | Evidence consequence |
+| --- | --- | --- |
+| `learning` | Develop or test learner capability. Target-relevant epistemic actions remain reserved for the learner except where declared assistance is instructionally justified. | Evidence is bounded by every Agent Action, Tool use, assistance event, and reveal. Independent capability requires fresh qualifying learner work. |
+| `execution` | Accomplish an external task using agent capability. | Agent-produced work may be useful output, but it is not learner-capability evidence. Review, agreement, or delivery does not change that status. |
+| `hybrid` | Divide a real task between learner and agent while developing selected capabilities. | Only the explicitly learner-reserved and observed work may support a learner claim. The task must state the claim ceiling created by the division. |
+
+The declaration must identify which retrieval, explanation, decision, construction, debugging, comparison, verification, and problem-solving actions belong to the learner; which the agent may perform; what Tools may do; and which outputs require learner inspection or transformation. A conversational phrase such as “we built this” cannot replace that attribution.
+
+A mode change is an explicit, append-preserved event. If a learner asks the agent to perform work that was reserved for the learner, the Harness must either refuse within the current task, record an allowed assistance or reveal event and narrow the claim, or close the evidence-eligible task and continue in execution or hybrid mode. It must not retroactively relabel delegated work as learner work.
+
+When AI output is used inside learning or hybrid mode, the Teaching Skill should require construct-relevant critical engagement where appropriate. This may include prediction before output, questioning assumptions, locating evidence, editing or annotating the output, testing it against observable consequences, comparing alternatives, explaining discrepancies, or revising a learner-authored artifact. These actions are instructional procedures, not automatic proof of understanding.
+
+The Teaching Skill must preserve a route to fresh performance under reduced or declared assistance whenever it claims movement toward independence. The appropriate delay, novelty, modality, Tools, and assistance conditions remain governed by the Evidence Contract and `AssistanceAndSolutionRevelationPolicy`.
+
 ## Typed result and durable-write boundary
 
 A Teaching Skill must return a versioned `TeachingSkillResult`. It must not directly mutate durable learner state, the active Learning Map, the Knowledge Ontology, Source records, permissions, Persona Relationship State, or any other canonical object.
@@ -296,6 +314,10 @@ The system must reject or surface any Teaching Skill that:
 - commits duplicate, stale, non-idempotent, untraceable, or silently overwritten evidence;
 - lacks a versioned `AssistanceAndSolutionRevelationPolicy`;
 - hides agent work or decisive assistance inside conversational style;
+- omits the interaction mode or exact learner, agent, and Tool labor partition;
+- switches from learning to hybrid or execution work without an explicit event and corresponding evidence consequence;
+- treats reviewing, editing, explaining, or approving agent-produced work as equivalent to independently producing the target work;
+- uses critical-engagement rituals as automatic evidence rather than evaluating the target-relevant learner work they elicit;
 - treats exposure, agreement, copying, completion, or assisted success as independent capability;
 - reveals decisive information without recording its effect on evidence validity;
 - continues identical retries after its declared error or struggle boundary;
