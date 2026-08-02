@@ -2,7 +2,7 @@
 type: product-doctrine
 doctrine_id: socratink-learner-agent-os-north-star
 status: evolving
-founder_direction_confirmed_at: 2026-08-01
+founder_direction_confirmed_at: 2026-08-02
 wayfinder_map: https://github.com/jon-devlapaz/socraTink/issues/1
 replacement_boundary: https://github.com/jon-devlapaz/socraTink/issues/13
 review_trigger: "Replace or materially revise only through an explicit founder decision informed by learner behavior, learning evidence, motivation and return behavior, trust, willingness to pay, or a material change in AI capability or the market."
@@ -47,6 +47,8 @@ Socratink should:
 - recommend human teachers, peers, mentors, or communities when human connection is the better intervention.
 
 Motivation is not engagement optimization. Socratink must not create dependency, demand loyalty, manipulate emotion, hide difficulty, provide false praise, inflate progress, or perform the learner's work to keep a session going. A motivated learner voluntarily returns to meaningful cognitive work. They are not merely retained by the interface.
+
+These responsibilities are governed by the [`Motivation, Curiosity, and Human Connection Contract`](motivation-contract.md). Its approved vocabulary does not imply nine separate product subsystems. The first proof uses one learner-visible Motivation Recovery Loop with bounded observation, learner choice, minimal approved retention, separated outcomes, and explicit safety stop gates. Contextual inspiration, Persona continuity, motivation memory, and proactive interpretation remain product hypotheses that must demonstrate incremental value over excellent pedagogy and transparent learner choice.
 
 ## The Learner Agent OS
 
@@ -106,7 +108,7 @@ The relationship should make the learner feel known and supported without preten
 
 The smallest complete proof serves an adult learner facing a real technical or academic performance demand.
 
-The learner provides a goal and a Source. The Learner Agent builds a provisional Learning Map, wears a chosen persona costume, invokes the first reconstruction Teaching Skill, preserves spoken or written learner work, identifies one consequential gap, and chooses a later action from evidence. The learner returns after elapsed time and attempts meaningful work again. Learner continuity survives a Model boundary.
+The learner provides a goal and a Source. The Learner Agent builds a provisional Learning Map, wears a chosen persona costume, invokes the first reconstruction Teaching Skill, preserves spoken or written learner work, identifies one consequential gap, and chooses a later action from evidence. If difficulty interrupts the encounter, the learner may invoke or confirm one bounded Motivation Recovery Loop without hidden affect inference or evidence mutation. The learner returns after elapsed time and attempts meaningful work again. Learner continuity survives a Model boundary.
 
 This first proof is not the whole product. It must demonstrate the operating principle from which broader subjects, Teaching Skills, personas, modalities, and learning projects can grow.
 
@@ -137,6 +139,6 @@ This north star keeps three kinds of claims distinct.
 
 Socratink adapts to the target, prior knowledge, accessibility needs, learner preference, observed response, and current conditions. It does not assign fixed visual, auditory, kinesthetic, verbal, or social “learning styles” and treat those labels as scientific learner traits.
 
-**Product hypotheses** include whether a persistent Learner Agent, contextual inspiration, learner-chosen personas, voice, relationship continuity, and evidence-informed Teaching Skill selection materially improve motivation, learning, return behavior, trust, and willingness to pay. The product must test these rather than call them scientific truth.
+**Product hypotheses** include whether a persistent Learner Agent, the Motivation Recovery Loop, contextual inspiration, learner-chosen personas, voice, relationship continuity, motivation memory, Human Connection Exits, and evidence-informed Teaching Skill selection materially improve agency, meaningful action, learning, safe return behavior, trust, and willingness to pay. The product must test these rather than call them scientific truth. Motivation evaluation must keep learner report, meaningful behavior, valid learning evidence, safety and relationship effects, and operational context separate. Non-returners remain part of the outcome.
 
 Qualitative sources that strengthened this direction include the 2026 Chris Piech interview supplied by the founder, <https://youtu.be/g-CD1d0q01I>, and the founder-supplied transcript about cognitive offloading and purpose-built educational AI, <https://youtu.be/52FiVExXfnU>. Their relevant spirit is adopted as product direction, not treated as controlled evidence. Rhetorical neuroscience claims, correlational findings, and learning-style language from a transcript do not become Socratink doctrine without stronger primary evidence.

@@ -99,6 +99,50 @@ _Avoid_: Agent Action, task queue, engagement prompt
 Research, retrieval, transformation, tool use, scheduling, planning, or other work performed by the Learner Agent. An Agent Action does not become learner evidence.
 _Avoid_: Next Learning Action, learner attempt
 
+### Candidate motivation interaction vocabulary
+
+The following terms make the motivation design discussable and testable. They do not yet imply nine separate durable domain objects, services, agents, scores, or stores. Runtime separation must be earned through observed value, safety, and architectural need. The first product proof composes them through one bounded Motivation Recovery Loop governed by [`docs/product/motivation-contract.md`](docs/product/motivation-contract.md).
+
+**Motivation Recovery Loop**:
+A learner-visible governed interaction protocol that begins from a learner request or permitted observation, presents any interpretation as a correctable possibility, offers meaningful choices, routes the chosen learning action through existing contracts, and preserves only minimal learner-approved state. It is not a separate agent, emotion engine, engagement intervention, or authority over goals, maps, evidence, permissions, and safety.
+_Avoid_: Motivation service, emotion detector, retention rescue, hidden regulator
+
+**Purpose Thread**:
+A learner-owned, revisable account of why continued growth matters, what the learner hopes to create or become capable of, and who may benefit. It may connect multiple Learning Goals and may be pursued through work inside or outside Socratink. The Learner Agent may help the learner recover, clarify, or revise it, but may not replace it with an engagement or product-retention objective. The learner may also choose uncertainty, temporary purpose, curiosity without a durable purpose, or no maintained Purpose Thread.
+_Avoid_: Learning Goal, engagement goal, retention objective, agent-assigned purpose
+
+**Motivation Hypothesis**:
+A temporary, inspectable, and learner-correctable interpretation that discouragement, overload, uncertainty, curiosity, or loss of purpose may be affecting the current learning experience. It must preserve its observations and uncertainty, cannot become a diagnosis or stable learner trait, and cannot count as capability evidence. Low-stakes adaptation may use it only while preserving a clear route for the learner to confirm, reject, or revise it.
+_Avoid_: Motivation score, personality trait, diagnosis, capability claim, hidden emotion inference
+
+**Inspiration Offer**:
+An optional, dismissible, and frequency-controlled proposal of a sourced example, problem, person, creation opportunity, or connection that may renew curiosity because it plausibly serves a Purpose Thread. It may range beyond the current Source, but cannot interrupt focused work for engagement, silently change a Learning Goal or Learning Map, or become evidence merely because the learner responds.
+_Avoid_: Engagement notification, distraction, hidden reroute, unsourced fact, capability evidence
+
+**Motivation Checkpoint**:
+A brief, non-diagnostic metacognitive intervention in which the Learner Agent exposes a Motivation Hypothesis and offers meaningful choices such as continuing, reducing scope, changing strategy or modality, reconnecting to a Purpose Thread, pausing, or seeking human support. Its aim is to strengthen the learner's own monitoring and regulation, not make reflection compulsory or turn the Agent into a hidden external regulator.
+_Avoid_: Mood surveillance, compulsory reflection, emotional control, engagement rescue
+
+**Growth Acknowledgment**:
+A specific, proportionate description of learner-authored growth and why it matters, grounded in an observed Attempt, correction, explanation, strategy change, honest uncertainty, creation, persistence decision, or return after difficulty. It may acknowledge effort only by naming the action and consequence. It cannot imply unsupported mastery, praise fixed intelligence or identity, compare learners, simulate exaggerated affection, or reward time, streaks, compliance, and session completion as progress.
+_Avoid_: Generic praise, mastery badge, intelligence praise, affection claim, engagement reward
+
+**Human Connection Exit**:
+An optional, privacy-preserving recommendation that a teacher, peer, mentor, or community may be a better next intervention, accompanied by an explanation and help formulating what the learner could ask. The MVP performs no person discovery, matching, messaging, scheduling, contact, or data sharing. Connection infrastructure is a later governed capability, not required for the first product proof.
+_Avoid_: Referral network, automatic outreach, contact sharing, abandonment, churn event
+
+**Supportive Continuity**:
+The transparent sense of being remembered and supported that arises when the Learner Agent appropriately uses learner-approved purpose, preferences, prior work, challenges, and growth. It may include warmth, humor, encouragement, and Persona-consistent expression while remaining explicit that the Agent is software. It cannot claim human consciousness or feelings, demand loyalty, imply exclusivity, express jealousy or neediness, guilt departure, discourage outside relationships, or treat product return as care owed to the Agent.
+_Avoid_: Simulated human relationship, exclusivity, emotional dependency, loyalty demand, hidden retention strategy
+
+**Motivation Outcome**:
+A bounded interpretation of whether the product helped the learner clarify purpose, preserve self-direction, voluntarily begin or return to meaningful learner-authored work, adapt strategy, create, or improve valid performance over time. Learner report, meaningful behavior, and valid learning evidence remain distinguishable. Chat volume, streaks, session length, opened notifications, and Persona attachment are diagnostic telemetry only and cannot serve as primary motivation success or capability evidence.
+_Avoid_: Engagement score, retention metric, streak, Persona attachment, capability claim
+
+**Motivation Memory**:
+The minimal learner-approved motivational state retained for continuity: Purpose Threads, explicit preferences, accepted strategy reflections, and factual intervention history. Motivation Hypotheses expire unless the learner confirms a bounded fact or preference worth retaining. The learner may inspect, correct, delete, or disable Motivation Memory. Hidden mood, vulnerability, mental-health, persuasion, dependency, voice-derived emotion, and Persona-attachment profiles are prohibited.
+_Avoid_: Emotional profile, vulnerability score, persuasion profile, dependency model, hidden sentiment history
+
 **Learning Goal**:
 A learner-owned desired outcome or performance demand that scopes a Learning Map. The Learner Agent may propose a sharper interpretation, but the learner retains final authority over the goal and every material reinterpretation.
 _Avoid_: Learning Target, agent objective, engagement goal
