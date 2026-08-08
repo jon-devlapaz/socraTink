@@ -146,7 +146,7 @@ Holding entitled capability, learner context, active goal, safety conditions, an
 - export, correction, deletion, or exit friction;
 - the truthfulness of explanations or progress representation.
 
-Payment and entitlement may transparently determine whether a declared service is available, including hosted inference, storage, or a premium capability. The unavailable capability and its consequence must be visible before purchase and at the decision point. Entitlement must not be covertly translated into worse pedagogy, weaker evidence standards, manipulation, or state hostage-taking.
+Payment and entitlement may transparently determine whether a declared service is available, including hosted inference, storage, or a premium capability. The unavailable capability and its consequence must be visible before purchase and at the decision point. Entitlement must not be translated into worse pedagogy, weaker evidence standards, manipulation, or state hostage-taking.
 
 Each material commercial or growth release must include a noninterference check that compares decision outputs under changed commercial variables while holding authorized educational inputs constant. Any unexplained change blocks release.
 
