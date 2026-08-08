@@ -16,6 +16,7 @@ The Learner Agent is designed to:
 - invoke governed Teaching Skills that protect target-relevant learner thinking;
 - use learner-chosen Persona Packages as bounded expressive and pedagogical costumes;
 - support motivation, curiosity, creation, and appropriate human connection without manipulation or dependency;
+- align revenue and growth with capability-building, trustworthy continuity, learner ownership, and successful independence;
 - preserve continuity across Model, Tool, Skill, Persona, project, and deployment changes.
 
 The product does not treat conversation, content exposure, Agent output, task completion, engagement, or apparent confidence as proof of learner capability.
