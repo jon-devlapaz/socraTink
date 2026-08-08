@@ -67,6 +67,8 @@ Motivation is not engagement optimization. Socratink must not create dependency,
 
 These responsibilities are governed by the [`Motivation, Curiosity, and Human Connection Contract`](motivation-contract.md). Its approved vocabulary does not imply nine separate product subsystems. The first proof uses one learner-visible Motivation Recovery Loop with bounded observation, learner choice, minimal approved retention, separated outcomes, and explicit safety stop gates. Contextual inspiration, Persona continuity, motivation memory, and proactive interpretation remain product hypotheses that must demonstrate incremental value over excellent pedagogy and transparent learner choice.
 
+Revenue, growth, notification, retention, analytics, access, and success decisions are governed by the [`Growth-Incentive Compatibility Contract`](growth-incentive-contract.md). Socratink may earn from capability-building, trustworthy continuity, and transparent access, but not from attention, unnecessary assistance, emotional attachment, prevented exit, or learner-state exploitation. Learner success outside the product, human referral, pause, export, and goal-complete departure remain legitimate outcomes.
+
 ## The Learner Agent OS
 
 The durable product entity is one learner-owned Learner Agent, not a chatbot session or Model account.
@@ -207,8 +209,9 @@ This doctrine is accepted only while all of the following remain true:
 7. Strategic first-proof constraints are distinguishable from the full vision and from universal learning truth.
 8. Agent Actions, assistance, exposure, conversation, engagement, and apparent confidence cannot become learner capability without the independent evidence path.
 9. Motivation, Persona continuity, voice, and relationship remain bounded by transparency, consent, learner control, human connection, and anti-dependency rules.
-10. Deferred architecture, business, market, and implementation choices remain outside doctrine.
-11. Null, negative, attrition, correction, accessibility, safety, and subgroup evidence cannot be discarded or reclassified to protect the product story.
-12. `README.md`, product contracts, and roadmap artifacts remain aligned with this doctrine or explicitly identify themselves as historical donor material.
+10. Deferred architecture, permanent business-model, market, and implementation choices remain outside doctrine.
+11. Revenue, growth, notification, retention, analytics, and access mechanisms remain compatible with learner independence under the Growth-Incentive Compatibility Contract.
+12. Null, negative, attrition, correction, accessibility, safety, and subgroup evidence cannot be discarded or reclassified to protect the product story.
+13. `README.md`, product contracts, and roadmap artifacts remain aligned with this doctrine or explicitly identify themselves as historical donor material.
 
 If an acceptance condition fails, the conflicting claim or derived artifact must be corrected, narrowed, deferred, or versioned before the doctrine can guide further implementation.
