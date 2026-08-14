@@ -17,7 +17,7 @@ setProvider(
 				name: 'Auto',
 				api: 'openai-completions',
 				provider: 'jon-local',
-				baseUrl: 'http://100.79.25.11:3001/v1',
+				baseUrl: process.env.JON_LOCAL_BASE_URL ?? 'http://127.0.0.1:3001/v1',
 				reasoning: false,
 				input: ['text'],
 				cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
