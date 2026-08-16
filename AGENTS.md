@@ -1,14 +1,13 @@
-# Socratink learning harness
+# Socratink product
 
-Socratink is the product. The repository uses a Flue-derived TypeScript harness
-as its foundation.
+This repository owns the standalone Socratink product. It uses published Flue
+packages as its agent harness.
 
 ## Ownership
 
-- `apps/socratink/` owns the Socratink application and learner-facing interface.
-- `packages/` owns the inherited harness framework.
-- Product changes belong in `apps/socratink/` unless a verified framework
-  requirement proves that a package must change.
+- `src/` owns the Socratink application and learner-facing interface.
+- Flue framework behavior comes from exact published `@flue/*` dependencies;
+  framework source is not vendored here.
 - Keep Flue attribution, Apache licensing, and `@flue/*` package names intact.
 
 Do not turn product work into a framework rewrite. Make the smallest complete
@@ -24,25 +23,18 @@ Routing is explicit in `app.ts`: mount an HTTP-reachable agent with
 `createAgentRouter`. Registration comes from the `'use agent'` scan, not from
 mounting.
 
-The model layer uses Pi's provider protocol through the inherited Flue runtime.
+The model layer uses Pi's provider protocol through the published Flue runtime.
 
 ## Project structure
 
-- `apps/socratink/` — Socratink chat app and web UI
-- `packages/runtime/` — agent runtime, sessions, tools, and harness plumbing
-- `packages/vite/` — Vite integration and generated server bootstraps
-- `packages/cli/` — Flue command-line tooling
-- `apps/www/` — inherited framework documentation
-- `examples/` — inherited framework integration examples
-- `demo/` — inherited standalone demonstration client
+- `src/agents/` — Socratink agents
+- `src/server/` — runtime provider configuration
+- `src/ui/` — learner-facing web UI
+- `src/app.ts` — HTTP routes and static UI delivery
 
 ## Verification
 
-For Socratink-only changes, run:
-
 ```sh
-pnpm --dir apps/socratink check:types
-pnpm --dir apps/socratink build
+pnpm check:types
+pnpm build
 ```
-
-Use broader workspace checks only when shared framework packages change.

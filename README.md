@@ -1,7 +1,7 @@
 # Socratink
 
-Socratink is a minimal, model-backed conversation surface built on a locally
-owned learning harness.
+Socratink is a minimal, model-backed conversation surface built with
+[Flue](https://github.com/withastro/flue).
 
 This baseline intentionally does one thing: it connects the Socratink web
 interface to one model-backed chat agent. Learning behavior comes later, after
@@ -13,7 +13,7 @@ Requirements: Node.js 22+, pnpm 11, and an OpenAI-compatible model endpoint.
 
 ```sh
 pnpm install
-pnpm --dir apps/socratink dev
+pnpm dev
 ```
 
 The app reads these local environment settings without committing their values:
@@ -22,18 +22,26 @@ The app reads these local environment settings without committing their values:
   `http://127.0.0.1:3001/v1`
 - `JON_LOCAL_API_KEY` — the endpoint's API key when required
 
-## Repository shape
+## Verify the app
 
-- `apps/socratink/` — the Socratink chat application and web interface
-- `packages/` — the framework packages that make up the learning harness
-- `apps/www/` — inherited framework documentation
-- `examples/` — inherited framework integration examples
-- `demo/` — inherited framework demonstration client
+```sh
+pnpm install --frozen-lockfile
+pnpm check:types
+pnpm build
+pnpm smoke
+pnpm audit --prod
+```
+
+The product source lives in `src/`. The default Vite build generates the
+Node application in `dist/`, and the UI build writes its static assets to
+`dist/client/`. The smoke test starts only local processes and uses a fake
+OpenAI-compatible provider; it never requires external credentials.
 
 ## Foundation and attribution
 
-The learning harness is derived from
-[Flue](https://github.com/withastro/flue), an open-source TypeScript agent
-harness. Its framework packages retain their `@flue/*` names so attribution and
-upstream lineage stay explicit. The repository remains licensed under the
-[Apache License 2.0](LICENSE).
+Socratink was extracted from [Flue](https://github.com/withastro/flue) v2.0.3
+at source commit
+[`bf86b872`](https://github.com/withastro/flue/commit/bf86b872). The standalone
+product consumes the published `@flue/*` packages and keeps those names, this
+provenance statement, and the original [Apache License 2.0](LICENSE) so its
+upstream lineage remains explicit.

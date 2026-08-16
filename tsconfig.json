@@ -1,4 +1,24 @@
 {
-	"extends": "./tsconfig.base.json",
-	"exclude": ["apps", "packages"]
+	"compilerOptions": {
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"allowArbitraryExtensions": true,
+		"allowImportingTsExtensions": true,
+		"allowJs": true,
+		"esModuleInterop": true,
+		"resolveJsonModule": true,
+		"target": "ES2022",
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"types": ["node", "vite/client"],
+		"strict": true,
+		"skipLibCheck": true,
+		"noUncheckedIndexedAccess": true,
+		"isolatedModules": true,
+		"verbatimModuleSyntax": true,
+		"forceConsistentCasingInFileNames": true,
+		"noEmit": true,
+		"incremental": true,
+		"preserveWatchOutput": true
+	},
+	"include": ["src", "vite.config.ts", "vite.config.ui.ts"]
 }
