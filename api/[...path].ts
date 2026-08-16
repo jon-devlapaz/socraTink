@@ -1,3 +1,4 @@
+// @ts-expect-error Vite generates this Flue runtime entry during `pnpm build`.
 import { loadFlueNodeApplication } from '../dist/app.mjs';
 
 let application = loadFlueNodeApplication();
