@@ -25,18 +25,23 @@ The app reads these local environment settings without committing their values:
 ## Verify the app
 
 ```sh
+pnpm install --frozen-lockfile
 pnpm check:types
 pnpm build
+pnpm smoke
+pnpm audit --prod
 ```
 
 The product source lives in `src/`. The default Vite build generates the
 Node application in `dist/`, and the UI build writes its static assets to
-`dist/client/`.
+`dist/client/`. The smoke test starts only local processes and uses a fake
+OpenAI-compatible provider; it never requires external credentials.
 
 ## Foundation and attribution
 
-Socratink began as a product application inside the Flue open-source
-TypeScript agent harness repository. The standalone product consumes the
-published `@flue/*` packages and keeps those names, this provenance statement,
-and the original [Apache License 2.0](LICENSE) so its upstream lineage remains
-explicit.
+Socratink was extracted from [Flue](https://github.com/withastro/flue) v2.0.3
+at source commit
+[`bf86b872`](https://github.com/withastro/flue/commit/bf86b872). The standalone
+product consumes the published `@flue/*` packages and keeps those names, this
+provenance statement, and the original [Apache License 2.0](LICENSE) so its
+upstream lineage remains explicit.

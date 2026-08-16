@@ -13,14 +13,15 @@
 		"build": "vite build && vite build --config vite.config.ui.ts",
 		"build:ui": "vite build --config vite.config.ui.ts",
 		"check": "pnpm check:types && pnpm build",
-		"check:types": "tsc --noEmit"
+		"check:types": "tsc --noEmit",
+		"smoke": "node scripts/smoke.mjs"
 	},
 	"dependencies": {
 		"@earendil-works/pi-ai": "^0.83.0",
 		"@flue/runtime": "2.0.3",
 		"@flue/sdk": "2.0.3",
 		"@hono/node-server": "^2.0.3",
-		"hono": "4.12.32",
+		"hono": "4.12.34",
 		"three": "0.132.2"
 	},
 	"devDependencies": {
