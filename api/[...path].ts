@@ -1,3 +1,15 @@
-import app from '../src/app.ts';
+import { loadFlueNodeApplication } from '../dist/app.mjs';
 
-export default app;
+let application = loadFlueNodeApplication();
+
+export default {
+	async fetch(request: Request) {
+		const loaded = await application;
+		const activity = loaded.enterActivity();
+		try {
+			return await loaded.fetch(request);
+		} finally {
+			activity.release();
+		}
+	},
+};
