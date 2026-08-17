@@ -33,3 +33,5 @@ vitest-results.json
 
 # job data (local development)
 data/
+.vercel
+.env*
