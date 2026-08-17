@@ -35,3 +35,4 @@ vitest-results.json
 data/
 .vercel
 .env*
+.artifacts/
