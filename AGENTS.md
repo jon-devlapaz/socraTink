@@ -38,3 +38,7 @@ The model layer uses Pi's provider protocol through the published Flue runtime.
 pnpm check:types
 pnpm build
 ```
+
+## Maintainability
+
+Follow the maintainability principles in [ZEN.md](ZEN.md).
