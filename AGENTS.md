@@ -25,6 +25,25 @@ mounting.
 
 The model layer uses Pi's provider protocol through the published Flue runtime.
 
+## Coding-agent portability
+
+This file is the project contract for coding agents. It is not owned by a
+particular editor, CLI, or model. Prefer the [AGENTS.md](https://agents.md/)
+open format and Agent Skills under `.agents/skills/`.
+
+Do not add or duplicate project instructions in harness-specific files such as
+`CLAUDE.md`, `.cursor/rules/`, `.cursorrules`,
+`.github/copilot-instructions.md`, `.cursor/skills/`, or `.claude/skills/`.
+Put specialized workflows in `.agents/skills/` as `SKILL.md` packages with
+scripts any agent can run.
+
+A thin compatibility shim that only points at this file is allowed when a tool
+cannot read `AGENTS.md` natively. Do not put doctrine, skills, or workflow in
+the shim.
+
+This constraint applies to coding-agent configuration. It does not change the
+product's Flue agent runtime, which remains a published-package dependency.
+
 ## Project structure
 
 - `src/agents/` — Socratink agents
@@ -42,3 +61,18 @@ pnpm build
 ## Maintainability
 
 Follow the maintainability principles in [ZEN.md](ZEN.md).
+
+## Product and learning doctrine
+
+[ZEN.md](ZEN.md) governs how to change this software. The sibling private
+repository `socratink-brain` governs what the product may become or claim.
+
+Before consequential product, learning, learner-agent, or experiment work,
+use `.agents/skills/socratink-brain` and run:
+
+```sh
+python .agents/skills/socratink-brain/scripts/brain.py orient
+```
+
+Then read the listed Brain files. Do not reconstruct doctrine from memory or
+from this repository's software-maintenance documents.
