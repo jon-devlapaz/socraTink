@@ -1,4 +1,6 @@
-// @ts-expect-error Vite generates this Flue runtime entry during `pnpm build`.
+// dist/app.mjs exists only after `pnpm build`. @ts-ignore stays valid
+// both before that file exists and after a local build.
+// @ts-ignore
 import { loadFlueNodeApplication } from '../dist/app.mjs';
 
 let application = loadFlueNodeApplication();
