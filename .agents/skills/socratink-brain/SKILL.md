@@ -3,11 +3,12 @@ name: socratink-brain
 description: >
   Interface safely with the Socratink Brain from the Socratink application repo:
   orient ontology to the live codebase, retrieve task-scoped canon, trace
-  provenance, reconcile new evidence, and validate the vault. Use when implementing
+  provenance, mine conversation/experiment histories into Learning Events,
+  reconcile new evidence, and validate the vault. Use when implementing
   product/learning behavior, learner evidence, Teaching Skills, experiments, R1,
-  or any task that depends on Socratink doctrine rather than software-maintenance
-  docs alone.
-version: 1.0.0
+  archaeology of transcripts, or any task that depends on Socratink doctrine
+  rather than software-maintenance docs alone.
+version: 1.1.0
 ---
 
 # Socratink Brain Interface
@@ -115,6 +116,7 @@ Use `orient` first, then `context` / `show` for the task-specific remainder.
 | Prefix | Meaning |
 |---|---|
 | `SRC-` | source / provenance record |
+| `EVT-` | learning event — archaeological capture of an experience before evidence or claims |
 | `CLM-` | atomic empirical or conceptual claim |
 | `MEC-` | causal/explanatory mechanism — why an effect may occur |
 | `EVD-` | evidence definition or evidence rule |
@@ -131,12 +133,150 @@ Use `orient` first, then `context` / `show` for the task-specific remainder.
 Do not invent a new type because a new noun appears. Prefer a property or link unless
 the concept needs independent authority and lifecycle.
 
+`EVT` is the only new type in this skill. It does **not** replace `SRC` or `EVD`.
+Do not add further types for “pattern”, “lesson”, “insight”, or “memory”.
+
+## Learning Event (`EVT`)
+
+Purpose: capture a meaningful experience **before** it becomes evidence or a claim.
+
+`EVT` is an archaeological bridge, not canonical truth. It preserves the context
+behind later `EVD-*` / `CLM-*` objects. It does not license product behavior.
+
+Suggested fields:
+
+```text
+id:
+type: learning_event
+status:
+confidence:
+
+source:
+trigger:
+context:
+
+attempt:
+
+feedback:
+
+correction:
+
+outcome:
+
+candidate_observation:
+candidate_evidence:
+candidate_claims:
+
+derived_from:
+```
+
+Constraints:
+
+- `EVT` is not Canon. Do not place it in `20 Canon/`.
+- `EVT` does not replace `EVD`. Candidate lessons inside an event are not evidence rules.
+- `EVT` must keep provenance to at least one `SRC-*` via `source` / `derived_from`.
+- An `accepted` EVT status means only that the event record is a faithful capture of
+  what happened, not that its candidate lesson is true or governing.
+- Keep `status` separate from `confidence`.
+- AI-generated summaries of a transcript are not `EVT` truth; the original source
+  artifact remains authoritative.
+
+Lifecycle ownership:
+
+| Stage | Owner |
+|---|---|
+| Preserve original artifact | `SRC-*` in `10 Sources/` |
+| Capture what happened | `EVT-*` in `10 Sources/` (Learning Events), append-only |
+| Define what observation counts | candidate `EVD-*` |
+| State what may be true | candidate `CLM-*` |
+| Govern what we do | `DEC-*` then `CAP-*` / `PROC-*` / `POL-*` after authorization |
+
+## Derivation lineage
+
+Every **newly generated** Brain object must support `derived_from:` listing the
+immediate parent objects that justify it. Keep existing `sources:` / `SRC-*` links;
+do not replace them.
+
+Examples:
+
+```text
+Claim:
+derived_from:
+  - SRC-001
+  - EVT-004
+  - EVD-009
+
+Decision:
+derived_from:
+  - CLM-002
+  - EXP-003
+
+Intervention:
+derived_from:
+  - DEC-004
+  - MEC-001
+```
+
+Prevent unsupported jumps: conversation → opinion → Canon.
+
+Valid archaeological chain:
+
+```text
+source
+    →
+learning event
+    →
+evidence
+    →
+claim
+    →
+decision
+    →
+intervention / procedure / policy / capability
+```
+
+This chain is required for knowledge mined from experience, transcripts, agent
+trajectories, experiments, or development logs.
+
+Research ingestion may still go `SRC → EVD/CLM` when no experiential event exists.
+Do not invent an `EVT` to decorate a paper. Do not skip `EVT` when the input is a
+conversation, trajectory, log, or trial.
+
+Existing Canon is not retroactively invalid if `derived_from` is absent. New writes
+must not omit it.
+
+## Promotion into operational behavior
+
+A validated pattern may become:
+
+```text
+Claim
+    ↓
+Decision
+    ↓
+Capability / Procedure / Policy
+```
+
+Use existing types. Do not create a new type unless independent authority and
+lifecycle are required.
+
+| Type | Promote when |
+|---|---|
+| `CAP-*` | the knowledge becomes a product/system capability |
+| `PROC-*` | the knowledge becomes a repeatable operating behavior |
+| `POL-*` | the knowledge governs eligibility, sequencing, permissions, or constraints |
+
+Promotion is never automatic. `candidate` remains the default. Changing status to
+`accepted` still requires the Canon-change authority in mode F.
+
 ## Truth boundaries
 
 Never collapse these:
 
 ```text
 source support
+    ≠
+learning event
     ≠
 domain model
     ≠
@@ -145,6 +285,16 @@ learner evidence
 learner-state inference
     ≠
 product claim
+```
+
+Also:
+
+```text
+EVT (what happened) ≠ EVD (what observation counts)
+observation ≠ pattern
+pattern ≠ claim
+claim ≠ decision
+AI summary ≠ source truth
 ```
 
 Also preserve:
@@ -233,10 +383,20 @@ At minimum:
    - contradicts;
    - supersedes;
    - historical only;
-6. do not bulk-promote;
-7. preserve conflicts and negative evidence;
-8. update affected views only after Canon reconciliation;
-9. append a consolidation receipt / ledger entry.
+6. before creating new canonical knowledge, ask:
+   - Does an existing claim disagree?
+   - Does this refine an existing object?
+   - Does this supersede an older decision?
+   - Is this merely a historical observation?
+7. do not bulk-promote;
+8. preserve conflicts and negative evidence;
+9. never resolve contradictions by averaging;
+10. update affected views only after Canon reconciliation;
+11. append a consolidation receipt / ledger entry.
+
+Do not skip Learning Events when the blob is experiential (conversation, trajectory,
+transcript, experiment log, development log). Preserve `SRC` first, then `EVT`, then
+candidate `EVD` / `CLM`.
 
 ### E. Maintain current execution state
 
@@ -286,13 +446,50 @@ If evidence suggests a change:
 3. identify downstream Canon/experiment implications;
 4. wait for explicit authorization before applying it.
 
+### H. Archaeology / Mining
+
+Use when analyzing conversation histories, agent trajectories, experiments,
+transcripts, or development logs.
+
+This mode extracts experience. It does not mint Canon.
+
+Workflow:
+
+1. Preserve the original source artifact as `SRC-*`. Do not overwrite it with a summary.
+2. Extract `EVT-*` Learning Events from the source.
+3. Identify recurring patterns **across events**. A pattern is not yet a claim.
+4. Generate candidate `EVD-*` objects from event observations that should count as evidence.
+5. Generate candidate `CLM-*` objects from patterns that may be true.
+6. Reconcile against existing Canon using the same classes as mode D.
+7. Do not promote automatically.
+
+Keep these layers distinct:
+
+| Layer | Question | Object |
+|---|---|---|
+| Observation | What happened? | `EVT-*` (and the `SRC-*` it derives from) |
+| Pattern | What repeats? | named in reconciliation notes / receipts; not a new type |
+| Claim | What may be true? | candidate `CLM-*` |
+| Decision | What should we do? | `DEC-*` only after Canon-change authority |
+
+Proactive contradiction check before any canonical write:
+
+- Does an existing claim disagree?
+- Does this refine an existing object?
+- Does this supersede an older decision?
+- Is this merely a historical observation?
+
+If a claim disagrees with accepted Canon, mark `contested` or leave the new item
+`candidate` and record the conflict in `60 Ledger/`. Do not average the documents.
+Do not treat an AI-generated summary as the source of truth.
+
 ## Write permissions
 
 Use this matrix unless the user explicitly grants broader authority.
 
 | Area | Default agent authority |
 |---|---|
-| `10 Sources/` | append provenance; do not rewrite source meaning |
+| `10 Sources/` | append provenance and `EVT-*` learning events; do not rewrite source meaning |
 | `20 Canon/` | read; propose; create `candidate` only when asked |
 | `30 Procedures/` | propose; update after a repeated/proven operating pattern |
 | `40 Views/` | update derived synthesis when underlying authority is unchanged |
@@ -316,6 +513,7 @@ When creating or modifying a canonical object:
   - `superseded`
   - `rejected`;
 - keep `status` separate from `confidence`;
+- include `derived_from` for newly generated objects;
 - link to sources and related Canon where possible;
 - keep one atomic governing idea per object;
 - add boundary conditions where applicable;
@@ -424,6 +622,7 @@ Stop and surface the conflict instead of improvising when:
 - a task requires a learner claim unsupported by the Evidence Contract;
 - current implementation cannot be established;
 - source provenance is missing for a consequential research claim;
+- a newly generated object lacks `derived_from` and would jump conversation → opinion → Canon;
 - the requested Canon mutation exceeds delegated authority.
 
 Do not resolve governance conflicts by averaging documents.
@@ -452,6 +651,14 @@ Do not rewrite retrieval policy from the abstract.
 Add provenance, extract the atomic claim, inspect design/population/outcome/boundary
 conditions, reconcile it against current retrieval claims, and mark conflict where
 warranted.
+
+### “Mine this chat history for lessons”
+
+Do not promote a summary into Canon.
+
+Preserve the transcript as `SRC-*`, extract `EVT-*` events, name repeating patterns
+without a new type, emit candidate `EVD-*` / `CLM-*`, and reconcile. Stop at
+`candidate` unless the task grants Canon-change authority.
 
 ### “Implement R1”
 

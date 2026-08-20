@@ -25,6 +25,10 @@ mounting.
 
 The model layer uses Pi's provider protocol through the published Flue runtime.
 
+When implementing or changing Flue agents, hooks, skills, tools, routing, or
+harness behavior, use `.agents/skills/flue-wiki` and read generated notes from
+the sibling `flue-obsidian-wiki` vault. Do not invent Flue APIs from memory.
+
 ## Coding-agent portability
 
 This file is the project contract for coding agents. It is not owned by a
